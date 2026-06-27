@@ -1,0 +1,96 @@
+import express from 'express';
+import cors from 'cors';
+import helmet from 'helmet';
+import compression from 'compression';
+import morgan from 'morgan';
+import path from 'path';
+import rateLimit from 'express-rate-limit';
+import swaggerJSDoc from 'swagger-jsdoc';
+import swaggerUi from 'swagger-ui-express';
+import dotenv from 'dotenv';
+
+dotenv.config();
+
+import authRoutes from './routes/auth';
+import inspectionRoutes from './routes/inspection';
+import dashboardRoutes from './routes/dashboard';
+import adminRoutes from './routes/admin';
+
+const app = express();
+const PORT = process.env.PORT ?? 4000;
+
+// ─── Security Middleware ────────────────────────────────────────────────────
+app.use(helmet({ crossOriginResourcePolicy: { policy: 'cross-origin' } }));
+app.use(cors({
+  origin: process.env.CORS_ORIGIN ?? 'http://localhost:3000',
+  credentials: true,
+  methods: ['GET', 'POST', 'PUT', 'DELETE', 'OPTIONS'],
+  allowedHeaders: ['Content-Type', 'Authorization'],
+}));
+app.use(compression());
+app.use(express.json({ limit: '50mb' }));
+app.use(express.urlencoded({ extended: true }));
+app.use(morgan('combined'));
+
+// Rate limiting
+const limiter = rateLimit({ windowMs: 15 * 60 * 1000, max: 200 });
+app.use('/api', limiter);
+
+// ─── Static Files ───────────────────────────────────────────────────────────
+app.use('/uploads', express.static(path.join(process.cwd(), 'uploads')));
+
+// ─── Swagger Docs ───────────────────────────────────────────────────────────
+const swaggerSpec = swaggerJSDoc({
+  definition: {
+    openapi: '3.0.0',
+    info: { title: 'AutoInspect AI API', version: '1.0.0', description: 'Enterprise AI Automotive Parts Inspection Platform' },
+    servers: [{ url: `http://localhost:${PORT}`, description: 'Development' }],
+    components: {
+      securitySchemes: {
+        bearerAuth: { type: 'http', scheme: 'bearer', bearerFormat: 'JWT' },
+      },
+    },
+    security: [{ bearerAuth: [] }],
+  },
+  apis: ['./src/routes/*.ts'],
+});
+app.use('/api/docs', swaggerUi.serve, swaggerUi.setup(swaggerSpec));
+app.get('/api/docs.json', (_req, res) => res.json(swaggerSpec));
+
+// ─── Routes ─────────────────────────────────────────────────────────────────
+app.use('/api/auth', authRoutes);
+app.use('/api/inspection', inspectionRoutes);
+app.use('/api/dashboard', dashboardRoutes);
+app.use('/api/admin', adminRoutes);
+
+// ─── Health Check ────────────────────────────────────────────────────────────
+app.get('/health', (_req, res) => {
+  res.json({ status: 'ok', service: 'AutoInspect AI Backend', timestamp: new Date().toISOString(), version: '1.0.0' });
+});
+
+// ─── 404 Handler ─────────────────────────────────────────────────────────────
+app.use((_req, res) => {
+  res.status(404).json({ success: false, message: 'Route not found' });
+});
+
+// ─── Error Handler ────────────────────────────────────────────────────────────
+app.use((err: Error, _req: express.Request, res: express.Response, _next: express.NextFunction) => {
+  console.error(err.stack);
+  res.status(500).json({ success: false, message: err.message ?? 'Internal server error' });
+});
+
+// ─── Start ───────────────────────────────────────────────────────────────────
+app.listen(PORT, () => {
+  console.log(`
+  ╔═══════════════════════════════════════════╗
+  ║      AutoInspect AI Backend v1.0.0        ║
+  ║   Enterprise Automotive Inspection API    ║
+  ╠═══════════════════════════════════════════╣
+  ║  Server:  http://localhost:${PORT}           ║
+  ║  Docs:    http://localhost:${PORT}/api/docs  ║
+  ║  Health:  http://localhost:${PORT}/health    ║
+  ╚═══════════════════════════════════════════╝
+  `);
+});
+
+export default app;
