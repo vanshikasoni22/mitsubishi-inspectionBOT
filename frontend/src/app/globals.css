@@ -1,0 +1,501 @@
+@import url('https://fonts.googleapis.com/css2?family=IBM+Plex+Sans:wght@300;400;500;600;700&family=JetBrains+Mono:wght@400;500;600&display=swap');
+@import "tailwindcss";
+
+/* ─── CSS Variables (Mitsubishi Electric Light Industrial Theme) ──────────── */
+:root {
+  /* Brand Colors */
+  --primary: #E60012;         /* Mitsubishi Red */
+  --primary-light: #FF3344;
+  --primary-dark: #B3000A;
+  --accent: #6B7280;          /* Steel Gray */
+  --accent-glow: rgba(107, 114, 128, 0.1);
+
+  /* Light Industrial Scale */
+  --bg-900: #F5F6F8;          /* Light Industrial Gray background */
+  --bg-800: #FFFFFF;          /* Pure White card backgrounds */
+  --bg-700: #EBF0F5;          /* Neutral gray panel/highlight */
+  --bg-600: #E5E7EB;          /* Borders */
+  --bg-500: #D1D5DB;
+  --bg-400: #9CA3AF;          /* Placeholders/Muted elements */
+
+  /* Surface */
+  --surface: #FFFFFF;
+  --surface-border: #E5E7EB;
+  --surface-hover: #F3F4F6;
+
+  /* Text (High contrast for plant floors) */
+  --text-primary: #111111;    /* Deep Black */
+  --text-secondary: #4B5563;  /* Slate/Steel gray text */
+  --text-muted: #8E9AA8;      /* Light muted text */
+
+  /* Status Colors */
+  --success: #10B981;         /* Emerald Green */
+  --success-bg: #E6F4EA;
+  --warning: #F59E0B;         /* Amber */
+  --warning-bg: #FFF8E1;
+  --error: #E60012;           /* Crimson Red */
+  --error-bg: #FCE8E6;
+  --info: #2563EB;
+
+  /* Japanese Minimalism Elements: Flat/Thin borders, minimal shadows */
+  --glass: #FFFFFF;
+  --glass-border: #E2E8F0;
+  --glass-shadow: 0 1px 3px rgba(0, 0, 0, 0.05);
+
+  --sidebar-width: 280px;
+}
+
+/* ─── Base Reset ─────────────────────────────────────────────────────────── */
+* {
+  margin: 0;
+  padding: 0;
+  box-sizing: border-box;
+  scrollbar-width: thin;
+  scrollbar-color: var(--bg-500) transparent;
+}
+
+*::-webkit-scrollbar { width: 5px; height: 5px; }
+*::-webkit-scrollbar-track { background: transparent; }
+*::-webkit-scrollbar-thumb { background: var(--bg-500); border-radius: 2px; }
+
+html { scroll-behavior: smooth; }
+
+body {
+  background-color: var(--bg-900);
+  color: var(--text-primary);
+  font-family: 'IBM Plex Sans', -apple-system, BlinkMacSystemFont, sans-serif;
+  font-size: 14px;
+  line-height: 1.5;
+  -webkit-font-smoothing: antialiased;
+  min-height: 100vh;
+}
+
+/* ─── Typography ─────────────────────────────────────────────────────────── */
+h1, h2, h3, h4, h5, h6 {
+  font-weight: 700;
+  color: var(--text-primary);
+  line-height: 1.25;
+  letter-spacing: -0.01em;
+}
+
+.font-mono { font-family: 'JetBrains Mono', monospace; }
+
+/* ─── Japanese Minimalist Cards (Thin borders, minimal shadow) ─────────────── */
+.glass-card {
+  background: var(--bg-800);
+  border: 1px solid var(--glass-border);
+  border-radius: 10px;
+  box-shadow: var(--glass-shadow);
+  transition: border-color 0.2s ease, box-shadow 0.2s ease;
+}
+
+.glass-card:hover {
+  border-color: #CBD5E1;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.05);
+}
+
+.glass-card-blue {
+  background: var(--bg-800);
+  border: 2px solid var(--primary);
+  border-radius: 10px;
+}
+
+/* ─── Interactive Form Elements ──────────────────────────────────────────── */
+.input {
+  width: 100%;
+  padding: 10px 14px;
+  background: #FFFFFF;
+  border: 1px solid #CBD5E1;
+  border-radius: 8px;
+  color: var(--text-primary);
+  font-size: 14px;
+  outline: none;
+  transition: border-color 0.15s ease, box-shadow 0.15s ease;
+}
+
+.input::placeholder { color: var(--text-muted); }
+.input:focus {
+  border-color: var(--primary);
+  box-shadow: 0 0 0 2px rgba(230, 0, 18, 0.1);
+}
+
+.select {
+  width: 100%;
+  padding: 10px 14px;
+  background: #FFFFFF;
+  border: 1px solid #CBD5E1;
+  border-radius: 8px;
+  color: var(--text-primary);
+  font-size: 14px;
+  outline: none;
+  cursor: pointer;
+  transition: border-color 0.15s ease;
+  appearance: none;
+  -webkit-appearance: none;
+  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' fill='none' viewBox='0 0 24 24' stroke='%234B5563'%3E%3Cpath stroke-linecap='round' stroke-linejoin='round' stroke-width='2' d='M19 9l-7 7-7-7'/%3E%3C/svg%3E");
+  background-repeat: no-repeat;
+  background-position: right 12px center;
+  background-size: 16px;
+  padding-right: 40px;
+}
+
+.select option {
+  background: #FFFFFF;
+  color: var(--text-primary);
+}
+
+.select:focus {
+  border-color: var(--primary);
+  box-shadow: 0 0 0 2px rgba(230, 0, 18, 0.1);
+}
+
+.label {
+  display: block;
+  font-size: 12px;
+  font-weight: 700;
+  letter-spacing: 0.03em;
+  text-transform: uppercase;
+  color: var(--text-secondary);
+  margin-bottom: 6px;
+}
+
+/* ─── Buttons ────────────────────────────────────────────────────────────── */
+.btn-primary {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  padding: 10px 20px;
+  background: var(--primary);
+  color: #FFFFFF;
+  border: none;
+  border-radius: 8px;
+  font-size: 14px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: background 0.15s ease, transform 0.1s ease;
+  text-decoration: none;
+  white-space: nowrap;
+}
+
+.btn-primary:hover {
+  background: var(--primary-dark);
+}
+
+.btn-primary:active { transform: translateY(1px); }
+
+.btn-secondary {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  padding: 10px 20px;
+  background: #FFFFFF;
+  color: var(--text-primary);
+  border: 1px solid #CBD5E1;
+  border-radius: 8px;
+  font-size: 14px;
+  font-weight: 500;
+  cursor: pointer;
+  transition: background 0.15s ease, border-color 0.15s ease;
+  text-decoration: none;
+  white-space: nowrap;
+}
+
+.btn-secondary:hover {
+  background: var(--bg-700);
+  border-color: var(--accent);
+}
+
+.btn-ghost {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  padding: 8px 16px;
+  background: transparent;
+  color: var(--text-secondary);
+  border: none;
+  border-radius: 6px;
+  font-size: 14px;
+  font-weight: 500;
+  cursor: pointer;
+  transition: background 0.15s ease, color 0.15s ease;
+}
+
+.btn-ghost:hover {
+  background: var(--bg-700);
+  color: var(--text-primary);
+}
+
+.btn-danger {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  padding: 10px 20px;
+  background: var(--error-bg);
+  color: var(--error);
+  border: 1px solid rgba(230, 0, 18, 0.3);
+  border-radius: 8px;
+  font-size: 14px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: background 0.15s ease;
+}
+
+.btn-danger:hover {
+  background: #FAD4D0;
+}
+
+/* ─── Status Badges ──────────────────────────────────────────────────────── */
+.badge {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  padding: 3px 10px;
+  border-radius: 4px;
+  font-size: 11px;
+  font-weight: 700;
+  letter-spacing: 0.02em;
+  text-transform: uppercase;
+}
+
+.badge-accepted {
+  background: var(--success-bg);
+  color: var(--success);
+  border: 1px solid rgba(16, 185, 129, 0.2);
+}
+.badge-rejected {
+  background: var(--error-bg);
+  color: var(--error);
+  border: 1px solid rgba(230, 0, 18, 0.2);
+}
+.badge-pending {
+  background: var(--warning-bg);
+  color: var(--warning);
+  border: 1px solid rgba(245, 158, 11, 0.2);
+}
+.badge-manual {
+  background: #EFF6FF;
+  color: var(--info);
+  border: 1px solid rgba(37, 99, 235, 0.2);
+}
+.badge-admin { background: #FAF5FF; color: #7C3AED; border: 1px solid rgba(124, 58, 237, 0.2); }
+.badge-inspector { background: #ECFDF5; color: #047857; border: 1px solid rgba(4, 120, 87, 0.2); }
+.badge-supervisor { background: #F0F9FF; color: #0369A1; border: 1px solid rgba(3, 105, 161, 0.2); }
+
+/* ─── KPI Cards ──────────────────────────────────────────────────────────── */
+.kpi-card {
+  background: var(--bg-800);
+  border: 1px solid var(--glass-border);
+  border-radius: 10px;
+  padding: 20px;
+  box-shadow: var(--glass-shadow);
+  transition: all 0.2s ease;
+}
+
+.kpi-card:hover {
+  border-color: var(--bg-500);
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.05);
+}
+
+/* ─── Sidebar (Japanese Minimalist: Structured & Clean) ──────────────────── */
+.sidebar {
+  width: var(--sidebar-width);
+  height: 100vh;
+  position: fixed;
+  left: 0;
+  top: 0;
+  background: #FFFFFF;
+  border-right: 1px solid var(--glass-border);
+  display: flex;
+  flex-direction: column;
+  z-index: 100;
+  overflow-y: auto;
+}
+
+.sidebar-nav-item {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 10px 16px;
+  border-radius: 6px;
+  color: var(--text-secondary);
+  font-size: 14px;
+  font-weight: 500;
+  cursor: pointer;
+  transition: all 0.15s ease;
+  text-decoration: none;
+  margin: 2px 12px;
+  border: 1px solid transparent;
+}
+
+.sidebar-nav-item:hover {
+  background: var(--bg-900);
+  color: var(--text-primary);
+  border-color: #E2E8F0;
+}
+
+.sidebar-nav-item.active {
+  background: var(--error-bg);
+  color: var(--primary);
+  font-weight: 600;
+  border-color: rgba(230, 0, 18, 0.15);
+}
+
+.sidebar-nav-item.active .nav-icon { color: var(--primary); }
+
+/* ─── Main Content ───────────────────────────────────────────────────────── */
+.main-content {
+  margin-left: var(--sidebar-width);
+  min-height: 100vh;
+  background: var(--bg-900);
+}
+
+/* ─── Table Design (Clean Japanese Minimalist Grid) ──────────────────────── */
+.table-container {
+  overflow-x: auto;
+  border-radius: 8px;
+  border: 1px solid var(--glass-border);
+  background: #FFFFFF;
+}
+
+table { width: 100%; border-collapse: collapse; }
+
+thead tr {
+  background: var(--bg-900);
+  border-bottom: 1px solid var(--glass-border);
+}
+
+th {
+  padding: 12px 16px;
+  text-align: left;
+  font-size: 11px;
+  font-weight: 700;
+  letter-spacing: 0.05em;
+  text-transform: uppercase;
+  color: var(--text-secondary);
+}
+
+td {
+  padding: 12px 16px;
+  border-bottom: 1px solid var(--glass-border);
+  color: var(--text-primary);
+  font-size: 13px;
+}
+
+tbody tr { transition: background 0.15s ease; }
+tbody tr:hover { background: var(--bg-900); }
+tbody tr:last-child td { border-bottom: none; }
+
+/* ─── Production Progress tracker (Horizontal Production line) ───────────── */
+.progress-bar {
+  height: 8px;
+  background: var(--bg-600);
+  border-radius: 4px;
+  overflow: hidden;
+}
+
+.progress-fill {
+  height: 100%;
+  border-radius: 4px;
+  transition: width 0.5s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+.step-circle {
+  width: 32px;
+  height: 32px;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 12px;
+  font-weight: 700;
+  border: 2px solid var(--bg-500);
+  background: #FFFFFF;
+  color: var(--text-secondary);
+  transition: all 0.2s ease;
+}
+
+.step-active {
+  border-color: var(--primary);
+  background: var(--primary);
+  color: #FFFFFF;
+}
+
+.step-completed {
+  border-color: var(--success);
+  background: var(--success);
+  color: #FFFFFF;
+}
+
+.step-inactive {
+  background: var(--bg-900);
+  color: var(--text-muted);
+  border-color: var(--bg-600);
+}
+
+/* ─── Drag Zone ──────────────────────────────────────────────────────────── */
+.drag-zone {
+  border: 2px dashed #CBD5E1;
+  border-radius: 10px;
+  padding: 32px;
+  text-align: center;
+  transition: all 0.2s ease;
+  cursor: pointer;
+  background: #FFFFFF;
+}
+
+.drag-zone:hover, .drag-zone.drag-over {
+  border-color: var(--primary);
+  background: var(--error-bg);
+}
+
+/* ─── AI Chat Bubble ─────────────────────────────────────────────────────── */
+.chat-bubble-user {
+  background: var(--primary);
+  color: #FFFFFF;
+  border-radius: 8px 8px 0px 8px;
+  padding: 10px 14px;
+  max-width: 80%;
+  font-size: 13px;
+}
+
+.chat-bubble-ai {
+  background: var(--bg-900);
+  border: 1px solid var(--glass-border);
+  color: var(--text-primary);
+  border-radius: 8px 8px 8px 0px;
+  padding: 10px 14px;
+  max-width: 85%;
+  font-size: 13px;
+}
+
+/* ─── Animations (Restrained 150-250ms transitions) ──────────────────────── */
+@keyframes fadeIn {
+  from { opacity: 0; transform: translateY(4px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+.animate-fade-in-up { animation: fadeIn 0.2s cubic-bezier(0.16, 1, 0.3, 1) forwards; }
+
+@keyframes scan {
+  0% { transform: translateY(-100%); opacity: 0.1; }
+  50% { opacity: 0.6; }
+  100% { transform: translateY(100%); opacity: 0.1; }
+}
+.animate-scan { animation: scan 1.5s ease-in-out infinite; }
+
+.skeleton {
+  background: linear-gradient(90deg, #F3F4F6 25%, #E5E7EB 50%, #F3F4F6 75%);
+  background-size: 200% 100%;
+  animation: shimmer 1.5s infinite;
+  border-radius: 4px;
+}
+@keyframes shimmer {
+  0% { background-position: -200% 0; }
+  100% { background-position: 200% 0; }
+}
+
+/* ─── Divider ────────────────────────────────────────────────────────────── */
+.divider {
+  height: 1px;
+  background: var(--glass-border);
+  margin: 16px 0;
+}
