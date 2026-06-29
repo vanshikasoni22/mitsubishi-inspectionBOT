@@ -71,6 +71,13 @@ export default function NewInspectionPage() {
     onDrop, accept: { 'image/*': [] }, multiple: true, maxSize: 10 * 1024 * 1024,
   });
 
+  const handleCapture = (file: File) => {
+    const newFiles = [...uploadedFiles, file].slice(0, 10);
+    setUploadedFiles(newFiles);
+    const urls = newFiles.map(f => URL.createObjectURL(f));
+    setPreviewUrls(urls);
+  };
+
   const removeImage = (idx: number) => {
     setUploadedFiles(prev => prev.filter((_, i) => i !== idx));
     setPreviewUrls(prev => prev.filter((_, i) => i !== idx));
