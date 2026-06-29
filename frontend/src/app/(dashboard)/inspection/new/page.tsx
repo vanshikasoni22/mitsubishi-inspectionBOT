@@ -11,6 +11,7 @@ import {
 } from 'lucide-react';
 import { inspectionApi, adminApi } from '@/lib/api';
 import Topbar from '@/components/Topbar';
+import CameraCapture from '@/components/CameraCapture';
 
 const RETURN_REASONS = [
   'Customer Complaint - Cosmetic Damage',
@@ -44,6 +45,7 @@ export default function NewInspectionPage() {
   const [analysisResult, setAnalysisResult] = useState<any>(null);
   const [uploadedFiles, setUploadedFiles] = useState<File[]>([]);
   const [previewUrls, setPreviewUrls] = useState<string[]>([]);
+  const [cameraMode, setCameraMode] = useState(false);
   const [duplicate, setDuplicate] = useState<any>(null);
 
   const [form, setForm] = useState({
