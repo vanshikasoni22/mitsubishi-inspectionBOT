@@ -1,5 +1,6 @@
 'use client';
 import Sidebar from '@/components/Sidebar';
+import GlobalChatbot from '@/components/GlobalChatbot';
 
 export default function DashboardLayout({ children }: { children: React.ReactNode }) {
   return (
@@ -8,6 +9,7 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
       <main className="main-content" style={{ flex: 1, overflow: 'hidden' }}>
         {children}
       </main>
+      <GlobalChatbot />
     </div>
   );
 }
