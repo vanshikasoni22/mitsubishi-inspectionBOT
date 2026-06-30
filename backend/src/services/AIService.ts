@@ -176,6 +176,20 @@ function randomInRange(min: number, max: number): number {
   return Math.round(min + Math.random() * (max - min));
 }
 
+const KEYWORD_MAP: Record<string, string> = {
+  rust: 'RUST', rusty: 'RUST', oxidation: 'RUST',
+  scratch: 'SCRATCH', scratched: 'SCRATCH',
+  dent: 'DENT', dented: 'DENT',
+};
+
+function detectDamageTypeFromCaption(caption: string): string | null {
+  const lower = caption.toLowerCase();
+  for (const [keyword, type] of Object.entries(KEYWORD_MAP)) {
+    if (lower.includes(keyword)) return type;
+  }
+  return null;
+}
+
 export class AIService {
   /**
    * Analyze inspection images and return AI findings.
