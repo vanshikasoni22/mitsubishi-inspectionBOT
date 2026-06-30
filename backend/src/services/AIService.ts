@@ -190,6 +190,13 @@ function detectDamageTypeFromCaption(caption: string): string | null {
   return null;
 }
 
+const DAMAGE_LIBRARY: Record<string, any> = {
+  DENT: { damageType: 'DENT', severity: 'MAJOR', confidence: 100, recommendation: 'REJECT' },
+  RUST: { damageType: 'RUST', severity: 'MAJOR', confidence: 100, recommendation: 'REJECT' },
+  SCRATCH: { damageType: 'SCRATCH', severity: 'MINOR', confidence: 100, recommendation: 'ACCEPT' },
+  NONE: { damageType: 'NONE', severity: 'MINOR', confidence: 100, recommendation: 'ACCEPT' },
+};
+
 export class AIService {
   /**
    * Analyze inspection images and return AI findings.
