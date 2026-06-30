@@ -106,6 +106,7 @@ export default function AdminPanelPage() {
         {/* Tab Headers */}
         <div className="tabs" style={{ marginBottom: 24, width: 'fit-content' }}>
           {[
+            { id: 'approvals', label: 'Inspection Approvals', icon: Activity },
             { id: 'users', label: 'User Management', icon: Users },
             { id: 'oems', label: 'OEM Partners', icon: Building },
             { id: 'suppliers', label: 'Suppliers', icon: Truck },
