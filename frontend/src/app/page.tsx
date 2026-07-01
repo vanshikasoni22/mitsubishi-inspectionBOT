@@ -35,27 +35,24 @@ export default function LandingPage() {
       {/* Navbar */}
       <nav style={{
         position: 'fixed', top: 0, left: 0, right: 0, zIndex: 100,
-        padding: '16px 48px',
+        padding: '14px 48px',
         display: 'flex', alignItems: 'center', justifyContent: 'space-between',
-        background: 'rgba(10, 13, 19, 0.85)',
-        backdropFilter: 'blur(20px)',
-        borderBottom: '1px solid var(--glass-border)',
+        background: '#FFFFFF',
+        borderBottom: '1px solid #E5E7EB',
       }}>
         <div style={{ display: 'flex', alignItems: 'center', gap: 12 }}>
-          <div style={{
-            width: 38, height: 38, borderRadius: 10,
-            background: 'linear-gradient(135deg, #0066CC 0%, #00D4FF 100%)',
-            display: 'flex', alignItems: 'center', justifyContent: 'center',
-            boxShadow: '0 4px 16px rgba(0,102,204,0.4)',
-          }}>
-            <Cpu size={20} color="white" />
+          <svg width="36" height="32" viewBox="0 0 100 90" fill="none" xmlns="http://www.w3.org/2000/svg">
+            <polygon points="50,46 64.4,21 50,0 35.6,21" fill="#E60012" />
+            <polygon points="46.5,50 17.7,50 3.3,75 32.1,75" fill="#E60012" />
+            <polygon points="53.5,50 67.9,75 96.7,75 82.3,50" fill="#E60012" />
+          </svg>
+          <div>
+            <div style={{ fontSize: 15, fontWeight: 800, color: 'var(--text-primary)', letterSpacing: '0.04em', textTransform: 'uppercase', lineHeight: 1.1 }}>MITSUBISHI</div>
+            <div style={{ fontSize: 9, color: 'var(--accent)', fontWeight: 600, letterSpacing: '0.04em', textTransform: 'uppercase' }}>ELECTRIC</div>
           </div>
-          <span style={{ fontSize: 18, fontWeight: 800, letterSpacing: '-0.02em' }}>
-            Auto<span className="gradient-text-blue">Inspect AI</span>
-          </span>
         </div>
         <div style={{ display: 'flex', alignItems: 'center', gap: 16 }}>
-          <Link href="/login" className="btn-ghost" style={{ fontSize: 14 }}>Sign In</Link>
+          <Link href="/login" style={{ fontSize: 14, color: '#4B5563', fontWeight: 500, textDecoration: 'none' }}>Sign In</Link>
           <Link href="/register" className="btn-primary">Get Started <ArrowRight size={14} /></Link>
         </div>
       </nav>
@@ -148,7 +145,7 @@ export default function LandingPage() {
               <div style={{ width: 10, height: 10, borderRadius: '50%', background: '#FFB300' }} />
               <div style={{ width: 10, height: 10, borderRadius: '50%', background: '#00E676' }} />
               <div style={{ flex: 1, textAlign: 'center', fontSize: 11, color: 'var(--text-muted)', letterSpacing: '0.05em' }}>
-                AutoInspect AI — Inspection Dashboard
+                Mitsubishi Electric — AI Inspection Dashboard
               </div>
             </div>
             {/* Mock dashboard content */}
@@ -274,7 +271,7 @@ export default function LandingPage() {
         <div style={{ maxWidth: 1000, margin: '0 auto' }}>
           <motion.div initial={{ opacity: 0, y: 20 }} whileInView={{ opacity: 1, y: 0 }} viewport={{ once: true }} style={{ textAlign: 'center', marginBottom: 60 }}>
             <h2 style={{ fontSize: 40, fontWeight: 800, letterSpacing: '-0.02em', marginBottom: 16 }}>
-              How <span className="gradient-text">AutoInspect AI</span> works
+              How the <span className="gradient-text">Mitsubishi Electric</span> AI System works
             </h2>
           </motion.div>
           <div style={{ display: 'grid', gridTemplateColumns: 'repeat(4, 1fr)', gap: 24, position: 'relative' }}>
@@ -320,7 +317,7 @@ export default function LandingPage() {
             Ready to transform your<br /><span className="gradient-text">inspection process?</span>
           </h2>
           <p style={{ color: 'var(--text-secondary)', fontSize: 16, marginBottom: 36 }}>
-            Join leading automotive manufacturers using AutoInspect AI to reduce disputes and accelerate returns.
+            Trusted by leading automotive OEM manufacturers. Built to Mitsubishi Electric's precision engineering standards.
           </p>
           <div style={{ display: 'flex', gap: 16, justifyContent: 'center' }}>
             <Link href="/register" className="btn-primary" style={{ fontSize: 16, padding: '14px 28px' }}>
@@ -343,13 +340,15 @@ export default function LandingPage() {
       {/* Footer */}
       <footer style={{ padding: '32px 48px', borderTop: '1px solid var(--glass-border)', display: 'flex', justifyContent: 'space-between', alignItems: 'center', flexWrap: 'wrap', gap: 16 }}>
         <div style={{ display: 'flex', alignItems: 'center', gap: 10 }}>
-          <div style={{ width: 28, height: 28, borderRadius: 8, background: 'linear-gradient(135deg, #0066CC, #00D4FF)', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
-            <Cpu size={14} color="white" />
-          </div>
-          <span style={{ fontWeight: 700, fontSize: 14 }}>AutoInspect AI</span>
+          <svg width="24" height="21" viewBox="0 0 100 90" fill="none" xmlns="http://www.w3.org/2000/svg">
+            <polygon points="50,46 64.4,21 50,0 35.6,21" fill="#E60012" />
+            <polygon points="46.5,50 17.7,50 3.3,75 32.1,75" fill="#E60012" />
+            <polygon points="53.5,50 67.9,75 96.7,75 82.3,50" fill="#E60012" />
+          </svg>
+          <span style={{ fontWeight: 700, fontSize: 13, textTransform: 'uppercase', letterSpacing: '0.04em' }}>Mitsubishi Electric</span>
         </div>
         <p style={{ color: 'var(--text-muted)', fontSize: 12 }}>
-          © 2024 AutoInspect AI. Enterprise Automotive Inspection Platform.
+          © 2024 Mitsubishi Electric. Quality Inspection &amp; Automotive Components Division.
         </p>
         <div style={{ display: 'flex', gap: 20 }}>
           {['Privacy', 'Terms', 'API Docs', 'Support'].map(l => (
