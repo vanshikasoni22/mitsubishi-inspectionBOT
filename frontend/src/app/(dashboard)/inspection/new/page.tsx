@@ -45,8 +45,15 @@ export default function NewInspectionPage() {
   const [analysisResult, setAnalysisResult] = useState<any>(null);
   const [uploadedFiles, setUploadedFiles] = useState<File[]>([]);
   const [previewUrls, setPreviewUrls] = useState<string[]>([]);
-  const [cameraMode, setCameraMode] = useState(false);
   const [duplicate, setDuplicate] = useState<any>(null);
+  const [cameraMode, setCameraMode] = useState(false);
+
+  const handleCapture = (file: File) => {
+    const newFiles = [...uploadedFiles, file].slice(0, 10);
+    setUploadedFiles(newFiles);
+    const urls = newFiles.map(f => URL.createObjectURL(f));
+    setPreviewUrls(urls);
+  };
 
   const [form, setForm] = useState({
     partNumber: '', oemId: '', supplierId: '', vehicleModel: '',
@@ -70,13 +77,6 @@ export default function NewInspectionPage() {
   const { getRootProps, getInputProps, isDragActive } = useDropzone({
     onDrop, accept: { 'image/*': [] }, multiple: true, maxSize: 10 * 1024 * 1024,
   });
-
-  const handleCapture = (file: File) => {
-    const newFiles = [...uploadedFiles, file].slice(0, 10);
-    setUploadedFiles(newFiles);
-    const urls = newFiles.map(f => URL.createObjectURL(f));
-    setPreviewUrls(urls);
-  };
 
   const removeImage = (idx: number) => {
     setUploadedFiles(prev => prev.filter((_, i) => i !== idx));
@@ -256,27 +256,68 @@ export default function NewInspectionPage() {
             </motion.div>
           )}
 
-          {/* ── Step 1: Upload Images ── */}
+          {/* ── Step 1: Capture Images ── */}
           {step === 1 && (
             <motion.div key="step1" initial={{ opacity: 0, x: 20 }} animate={{ opacity: 1, x: 0 }} exit={{ opacity: 0, x: -20 }}>
               <div className="glass-card" style={{ padding: 32 }}>
                 <h2 style={{ fontSize: 20, fontWeight: 700, marginBottom: 8 }}>Capture Images</h2>
                 <p style={{ color: 'var(--text-secondary)', fontSize: 14, marginBottom: 24 }}>Upload multiple high-resolution images for best AI analysis results. Max 10 images, 10MB each.</p>
 
-                {/* Drag Zone */}
-                <div {...getRootProps()} className={`drag-zone ${isDragActive ? 'drag-over' : ''}`} style={{ marginBottom: 24 }}>
-                  <input {...getInputProps()} />
-                  <Upload size={36} style={{ color: isDragActive ? 'var(--primary-light)' : 'var(--text-muted)', marginBottom: 12 }} />
-                  <p style={{ fontSize: 15, fontWeight: 600, marginBottom: 6, color: isDragActive ? 'var(--primary-light)' : 'var(--text-primary)' }}>
-                    {isDragActive ? 'Drop images here' : 'Drag & drop images here'}
-                  </p>
-                  <p style={{ fontSize: 13, color: 'var(--text-muted)' }}>or click to browse files</p>
-                  <div style={{ display: 'flex', gap: 12, justifyContent: 'center', marginTop: 16 }}>
-                    {['JPG', 'PNG', 'WEBP', 'HEIC'].map(f => (
-                      <span key={f} style={{ fontSize: 10, padding: '2px 8px', background: 'rgba(255,255,255,0.06)', borderRadius: 6, color: 'var(--text-muted)', fontWeight: 600 }}>{f}</span>
-                    ))}
-                  </div>
+                {/* Upload Method Tabs */}
+                <div style={{ display: 'flex', gap: 12, marginBottom: 24 }}>
+                  <button 
+                    onClick={() => setCameraMode(false)}
+                    type="button"
+                    className={`btn-ghost ${!cameraMode ? 'active' : ''}`}
+                    style={{
+                      flex: 1, display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 8, padding: '12px', borderRadius: 8,
+                      background: !cameraMode ? 'rgba(0, 102, 204, 0.15)' : 'rgba(255,255,255,0.02)',
+                      border: !cameraMode ? '1px solid var(--primary-light)' : '1px solid var(--glass-border)',
+                      color: !cameraMode ? 'var(--primary-light)' : 'var(--text-secondary)',
+                      cursor: 'pointer'
+                    }}
+                  >
+                    <Upload size={16} /> File Upload
+                  </button>
+                  <button 
+                    onClick={() => setCameraMode(true)}
+                    type="button"
+                    className={`btn-ghost ${cameraMode ? 'active' : ''}`}
+                    style={{
+                      flex: 1, display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 8, padding: '12px', borderRadius: 8,
+                      background: cameraMode ? 'rgba(0, 102, 204, 0.15)' : 'rgba(255,255,255,0.02)',
+                      border: cameraMode ? '1px solid var(--primary-light)' : '1px solid var(--glass-border)',
+                      color: cameraMode ? 'var(--primary-light)' : 'var(--text-secondary)',
+                      cursor: 'pointer'
+                    }}
+                  >
+                    <Camera size={16} /> Live Camera (OpenCV)
+                  </button>
                 </div>
+
+                {cameraMode ? (
+                  <div style={{ marginBottom: 24 }}>
+                    <CameraCapture 
+                      onCapture={handleCapture}
+                      onClose={() => setCameraMode(false)}
+                    />
+                  </div>
+                ) : (
+                  /* Drag Zone */
+                  <div {...getRootProps()} className={`drag-zone ${isDragActive ? 'drag-over' : ''}`} style={{ marginBottom: 24 }}>
+                    <input {...getInputProps()} />
+                    <Upload size={36} style={{ color: isDragActive ? 'var(--primary-light)' : 'var(--text-muted)', marginBottom: 12 }} />
+                    <p style={{ fontSize: 15, fontWeight: 600, marginBottom: 6, color: isDragActive ? 'var(--primary-light)' : 'var(--text-primary)' }}>
+                      {isDragActive ? 'Drop images here' : 'Drag & drop images here'}
+                    </p>
+                    <p style={{ fontSize: 13, color: 'var(--text-muted)' }}>or click to browse files</p>
+                    <div style={{ display: 'flex', gap: 12, justifyContent: 'center', marginTop: 16 }}>
+                      {['JPG', 'PNG', 'WEBP', 'HEIC'].map(f => (
+                        <span key={f} style={{ fontSize: 10, padding: '2px 8px', background: 'rgba(255,255,255,0.06)', borderRadius: 6, color: 'var(--text-muted)', fontWeight: 600 }}>{f}</span>
+                      ))}
+                    </div>
+                  </div>
+                )}
 
                 {/* Photo Quality Tips */}
                 <div style={{ padding: '12px 16px', background: 'rgba(0,102,204,0.06)', borderRadius: 10, border: '1px solid rgba(0,102,204,0.15)', marginBottom: 24 }}>
@@ -348,42 +389,100 @@ export default function NewInspectionPage() {
                 </div>
               ) : analysisResult ? (
                 <div style={{ display: 'flex', flexDirection: 'column', gap: 20 }}>
-                  {/* Result Header */}
-                  <motion.div className="glass-card" initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} style={{ padding: 28 }}>
-                    <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', marginBottom: 20 }}>
-                      <div>
-                        <div style={{ display: 'flex', alignItems: 'center', gap: 10, marginBottom: 8 }}>
-                          <Brain size={20} style={{ color: 'var(--primary-light)' }} />
-                          <h2 style={{ fontSize: 18, fontWeight: 700 }}>AI Analysis Complete</h2>
-                        </div>
-                        <p style={{ color: 'var(--text-secondary)', fontSize: 13 }}>{analysisResult.aiAnalysis?.summaryText}</p>
-                      </div>
-                      <div style={{
-                        padding: '8px 20px', borderRadius: 12,
-                        background: `${getStatusColor(analysisResult.aiAnalysis?.recommendation)}20`,
-                        border: `1px solid ${getStatusColor(analysisResult.aiAnalysis?.recommendation)}40`,
-                        fontSize: 14, fontWeight: 800,
-                        color: getStatusColor(analysisResult.aiAnalysis?.recommendation),
-                      }}>
-                        {analysisResult.aiAnalysis?.recommendation?.replace(/_/g, ' ')}
-                      </div>
-                    </div>
+                  {/* Verdict Screen Banner */}
+                  {(() => {
+                    const isAcceptable = analysisResult.aiAnalysis?.recommendation === 'ACCEPT' || analysisResult.aiAnalysis?.recommendation === 'CONDITIONAL_ACCEPT';
+                    const verdictText = isAcceptable ? 'ACCEPT' : 'REJECT';
+                    const verdictColor = isAcceptable ? '#00E676' : '#FF4B6B';
+                    const verdictBg = isAcceptable ? 'rgba(0, 230, 118, 0.08)' : 'rgba(255, 75, 107, 0.08)';
+                    const verdictBorder = isAcceptable ? 'rgba(0, 230, 118, 0.25)' : 'rgba(255, 75, 107, 0.25)';
+                    
+                    return (
+                      <motion.div 
+                        initial={{ scale: 0.95, opacity: 0 }} 
+                        animate={{ scale: 1, opacity: 1 }} 
+                        transition={{ type: 'spring', stiffness: 200, damping: 20 }}
+                        style={{
+                          background: verdictBg,
+                          border: `2px solid ${verdictBorder}`,
+                          borderRadius: '16px',
+                          padding: '36px',
+                          textAlign: 'center',
+                          boxShadow: `0 8px 32px ${isAcceptable ? 'rgba(0, 230, 118, 0.15)' : 'rgba(255, 75, 107, 0.15)'}`,
+                          position: 'relative',
+                          overflow: 'hidden'
+                        }}
+                      >
+                        {/* Glow effect */}
+                        <div style={{
+                          position: 'absolute',
+                          top: '-50%',
+                          left: '-50%',
+                          right: '-50%',
+                          bottom: '-50%',
+                          background: `radial-gradient(circle, ${verdictColor}15 0%, transparent 70%)`,
+                          pointerEvents: 'none',
+                          zIndex: 0
+                        }} />
 
-                    {/* Key Metrics */}
-                    <div style={{ display: 'grid', gridTemplateColumns: 'repeat(4, 1fr)', gap: 16 }}>
-                      {[
-                        { label: 'Damage Type', value: analysisResult.aiAnalysis?.damageType?.replace(/_/g, ' ') },
-                        { label: 'AI Confidence', value: `${analysisResult.aiAnalysis?.confidence}%` },
-                        { label: 'Severity', value: analysisResult.aiAnalysis?.severity, color: getSeverityColor(analysisResult.aiAnalysis?.severity) },
-                        { label: 'Risk Score', value: analysisResult.aiAnalysis?.riskScore },
-                      ].map((m, i) => (
-                        <div key={i} style={{ padding: '12px 16px', background: 'rgba(255,255,255,0.03)', borderRadius: 10, border: '1px solid var(--glass-border)' }}>
-                          <div style={{ fontSize: 10, color: 'var(--text-muted)', textTransform: 'uppercase', letterSpacing: '0.06em', marginBottom: 6 }}>{m.label}</div>
-                          <div style={{ fontSize: 16, fontWeight: 700, color: m.color ?? 'var(--text-primary)' }}>{m.value}</div>
+                        <div style={{ position: 'relative', zIndex: 1 }}>
+                          <span style={{
+                            display: 'inline-block',
+                            padding: '6px 16px',
+                            background: isAcceptable ? 'rgba(0, 230, 118, 0.15)' : 'rgba(255, 75, 107, 0.15)',
+                            borderRadius: '50px',
+                            fontSize: '11px',
+                            fontWeight: 700,
+                            letterSpacing: '0.15em',
+                            color: verdictColor,
+                            marginBottom: '16px',
+                            border: `1px solid ${verdictColor}30`,
+                            textTransform: 'uppercase'
+                          }}>
+                            AI DECISION VERDICT
+                          </span>
+                          
+                          <h1 style={{
+                            fontSize: '64px',
+                            fontWeight: 900,
+                            letterSpacing: '0.05em',
+                            margin: '0 0 12px 0',
+                            color: verdictColor,
+                            textShadow: `0 0 20px ${verdictColor}40`,
+                            lineHeight: 1
+                          }}>
+                            {verdictText}
+                          </h1>
+                          
+                          <p style={{
+                            fontSize: '15px',
+                            color: 'var(--text-primary)',
+                            fontWeight: 500,
+                            maxWidth: '600px',
+                            margin: '0 auto 24px',
+                            lineHeight: 1.6
+                          }}>
+                            {analysisResult.aiAnalysis?.summaryText}
+                          </p>
+
+                          {/* Key Metrics */}
+                          <div style={{ display: 'grid', gridTemplateColumns: 'repeat(4, 1fr)', gap: 16, marginTop: 24 }}>
+                            {[
+                              { label: 'Damage Type', value: analysisResult.aiAnalysis?.damageType?.replace(/_/g, ' ') },
+                              { label: 'AI Confidence', value: `${analysisResult.aiAnalysis?.confidence}%` },
+                              { label: 'Severity', value: analysisResult.aiAnalysis?.severity, color: getSeverityColor(analysisResult.aiAnalysis?.severity) },
+                              { label: 'Risk Score', value: analysisResult.aiAnalysis?.riskScore },
+                            ].map((m, i) => (
+                              <div key={i} style={{ padding: '12px 16px', background: 'rgba(0, 0, 0, 0.25)', borderRadius: 10, border: '1px solid var(--glass-border)', backdropFilter: 'blur(4px)' }}>
+                                <div style={{ fontSize: 10, color: 'var(--text-muted)', textTransform: 'uppercase', letterSpacing: '0.06em', marginBottom: 6 }}>{m.label}</div>
+                                <div style={{ fontSize: 16, fontWeight: 700, color: m.color ?? 'var(--text-primary)' }}>{m.value}</div>
+                              </div>
+                            ))}
+                          </div>
                         </div>
-                      ))}
-                    </div>
-                  </motion.div>
+                      </motion.div>
+                    );
+                  })()}
 
                   {/* Confidence Gauge */}
                   <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.1 }}
