@@ -2,18 +2,26 @@
 import { useState } from 'react';
 import { motion } from 'framer-motion';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
+import { useRouter } from 'next/navigation';
 import {
   Shield, Users, Building, Truck, Activity, Heart,
-  PlusCircle, Trash2, Edit2, Loader2, RefreshCw, Key
+  PlusCircle, Trash2, Edit2, Loader2, RefreshCw, Key,
+  Eye, CheckCircle, XCircle, AlertTriangle, UserCheck
 } from 'lucide-react';
-import { adminApi } from '@/lib/api';
+import { adminApi, inspectionApi } from '@/lib/api';
 import Topbar from '@/components/Topbar';
 import toast from 'react-hot-toast';
 import { formatDistanceToNow } from 'date-fns';
 
 export default function AdminPanelPage() {
+  const router = useRouter();
   const qc = useQueryClient();
-  const [activeTab, setActiveTab] = useState<'users' | 'oems' | 'suppliers' | 'logs' | 'health'>('users');
+  const [activeTab, setActiveTab] = useState<'users' | 'oems' | 'suppliers' | 'logs' | 'health' | 'approvals'>('users');
+
+  // Approvals State
+  const [selectedApproval, setSelectedApproval] = useState<any>(null);
+  const [overrideStatus, setOverrideStatus] = useState('');
+  const [overrideNote, setOverrideNote] = useState('');
 
   // Modals / forms state
   const [userFormOpen, setUserFormOpen] = useState(false);
@@ -55,6 +63,36 @@ export default function AdminPanelPage() {
     queryFn: () => adminApi.getHealth().then(r => r.data),
     enabled: activeTab === 'health',
   });
+
+  const { data: approvalsData, isLoading: loadingApprovals, refetch: refetchApprovals } = useQuery({
+    queryKey: ['admin-approvals'],
+    queryFn: () => inspectionApi.getHistory({ page: 1, limit: 50, status: 'MANUAL_REVIEW' }).then(r => r.data),
+    enabled: activeTab === 'approvals',
+  });
+  const pendingApprovals = approvalsData?.items ?? [];
+
+  const overrideMutation = useMutation({
+    mutationFn: () => inspectionApi.override(selectedApproval.id, overrideStatus, overrideNote),
+    onSuccess: () => {
+      qc.invalidateQueries({ queryKey: ['admin-approvals'] });
+      toast.success('Inspection decision submitted successfully');
+      setSelectedApproval(null);
+      setOverrideStatus('');
+      setOverrideNote('');
+    },
+    onError: () => {
+      toast.error('Failed to submit decision');
+    }
+  });
+
+  const handleApplyOverride = (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!overrideStatus) {
+      toast.error('Please select a status');
+      return;
+    }
+    overrideMutation.mutate();
+  };
 
   // Mutations
   const createUserMutation = useMutation({
@@ -106,10 +144,10 @@ export default function AdminPanelPage() {
         {/* Tab Headers */}
         <div className="tabs" style={{ marginBottom: 24, width: 'fit-content' }}>
           {[
-            { id: 'approvals', label: 'Inspection Approvals', icon: Activity },
             { id: 'users', label: 'User Management', icon: Users },
             { id: 'oems', label: 'OEM Partners', icon: Building },
             { id: 'suppliers', label: 'Suppliers', icon: Truck },
+            { id: 'approvals', label: 'Inspection Approvals', icon: Shield },
             { id: 'logs', label: 'Audit Logs', icon: Activity },
             { id: 'health', label: 'System Health', icon: Heart },
           ].map(t => {
@@ -334,6 +372,141 @@ export default function AdminPanelPage() {
                       <div>Suppliers: <strong>{healthData.dataStore?.suppliers}</strong></div>
                     </div>
                   </div>
+                </div>
+              )}
+            </div>
+          )}
+
+          {/* INSPECTION APPROVALS */}
+          {activeTab === 'approvals' && (
+            <div style={{ display: 'grid', gridTemplateColumns: selectedApproval ? '1fr 400px' : '1fr', gap: 20 }}>
+              {/* Approvals Table */}
+              <div style={{ flex: 1 }}>
+                <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 20 }}>
+                  <h3 style={{ fontSize: 16, fontWeight: 700, display: 'flex', alignItems: 'center', gap: 8 }}>
+                    <Shield size={18} style={{ color: 'var(--primary-light)' }} /> Pending Inspection Approvals ({pendingApprovals.length})
+                  </h3>
+                  <button onClick={() => refetchApprovals()} className="btn-ghost" title="Refresh Approvals">
+                    <RefreshCw size={15} />
+                  </button>
+                </div>
+
+                {loadingApprovals ? (
+                  <div style={{ display: 'flex', flexDirection: 'column', gap: 10 }}>
+                    {[...Array(3)].map((_, i) => <div key={i} className="skeleton" style={{ height: 60, borderRadius: 8 }} />)}
+                  </div>
+                ) : pendingApprovals.length === 0 ? (
+                  <div style={{ padding: 48, textAlign: 'center', color: 'var(--text-muted)' }}>
+                    <CheckCircle size={36} style={{ color: 'var(--success)', marginBottom: 12, display: 'block', marginLeft: 'auto', marginRight: 'auto' }} />
+                    <p style={{ fontSize: 15, fontWeight: 600 }}>All Clear!</p>
+                    <p style={{ fontSize: 13, marginTop: 4 }}>No inspection requests are currently pending admin approval.</p>
+                  </div>
+                ) : (
+                  <div className="table-container">
+                    <table>
+                      <thead>
+                        <tr>
+                          <th>Batch No.</th>
+                          <th>Part Number</th>
+                          <th>OEM</th>
+                          <th>Reason</th>
+                          <th>AI Confidence</th>
+                          <th>Inspector</th>
+                          <th>Date</th>
+                          <th>Actions</th>
+                        </tr>
+                      </thead>
+                      <tbody>
+                        {pendingApprovals.map((item: any) => (
+                          <tr key={item.id} style={{
+                            background: selectedApproval?.id === item.id ? 'rgba(0, 102, 204, 0.08)' : 'transparent',
+                            cursor: 'pointer'
+                          }} onClick={() => setSelectedApproval(item)}>
+                            <td><span className="font-mono" style={{ fontSize: 12, color: 'var(--primary-light)' }}>{item.batchNumber}</span></td>
+                            <td style={{ fontWeight: 600 }}>{item.partNumber}</td>
+                            <td style={{ fontSize: 13, color: 'var(--text-secondary)' }}>{item.oem?.name}</td>
+                            <td style={{ fontSize: 13, color: 'var(--text-secondary)' }}>{item.returnReason}</td>
+                            <td>
+                              <div style={{ display: 'flex', alignItems: 'center', gap: 6 }}>
+                                <div className="progress-bar" style={{ width: 50 }}>
+                                  <div className="progress-fill" style={{ width: `${item.aiAnalysis?.confidence}%`, background: '#FFB300' }} />
+                                </div>
+                                <span style={{ fontSize: 12, fontWeight: 600, color: 'var(--warning)' }}>{item.aiAnalysis?.confidence}%</span>
+                              </div>
+                            </td>
+                            <td style={{ fontSize: 12, color: 'var(--text-secondary)' }}>{item.inspector?.name}</td>
+                            <td style={{ fontSize: 12, color: 'var(--text-muted)' }}>{formatDistanceToNow(new Date(item.createdAt), { addSuffix: true })}</td>
+                            <td>
+                              <div style={{ display: 'flex', gap: 6 }}>
+                                <button className="btn-ghost" style={{ padding: '4px 8px' }} onClick={(e) => { e.stopPropagation(); router.push(`/inspection/${item.id}`) }}>
+                                  <Eye size={13} /> View
+                                </button>
+                                <button className="btn-primary" style={{ padding: '4px 8px', fontSize: 12 }} onClick={(e) => { e.stopPropagation(); setSelectedApproval(item); }}>
+                                  Review
+                                </button>
+                              </div>
+                            </td>
+                          </tr>
+                        ))}
+                      </tbody>
+                    </table>
+                  </div>
+                )}
+              </div>
+
+              {/* Side decision drawer */}
+              {selectedApproval && (
+                <div className="glass-card" style={{ padding: 20, height: 'fit-content', border: '1px solid rgba(255, 255, 255, 0.1)', background: 'rgba(255, 255, 255, 0.02)' }}>
+                  <div style={{ display: 'flex', justifySelf: 'stretch', justifyContent: 'space-between', alignItems: 'center', marginBottom: 16 }}>
+                    <h3 style={{ fontSize: 15, fontWeight: 700 }}>Review Approval</h3>
+                    <button onClick={() => setSelectedApproval(null)} className="btn-ghost" style={{ padding: 4 }}>✕</button>
+                  </div>
+
+                  <div style={{ marginBottom: 14 }}>
+                    <div style={{ fontSize: 10, color: 'var(--text-muted)', textTransform: 'uppercase', letterSpacing: '0.05em' }}>Part & Model</div>
+                    <div style={{ fontSize: 14, fontWeight: 700, marginTop: 2 }}>{selectedApproval.partNumber}</div>
+                    <div style={{ fontSize: 12, color: 'var(--text-secondary)' }}>{selectedApproval.vehicleModel}</div>
+                  </div>
+
+                  <div style={{ marginBottom: 14 }}>
+                    <div style={{ fontSize: 10, color: 'var(--text-muted)', textTransform: 'uppercase', letterSpacing: '0.05em' }}>AI Findings</div>
+                    <div style={{ display: 'flex', alignItems: 'center', gap: 6, marginTop: 4 }}>
+                      <span className="badge badge-manual" style={{ fontSize: 10 }}>MANUAL REVIEW</span>
+                      <span style={{ fontSize: 12, fontWeight: 600 }}>Confidence: {selectedApproval.aiAnalysis?.confidence}%</span>
+                    </div>
+                    <p style={{ fontSize: 12, color: 'var(--text-secondary)', marginTop: 6, lineHeight: 1.4 }}>
+                      {selectedApproval.aiAnalysis?.reasoning}
+                    </p>
+                  </div>
+
+                  <div style={{ height: 1, background: 'var(--glass-border)', margin: '14px 0' }} />
+
+                  <form onSubmit={handleApplyOverride}>
+                    <div style={{ marginBottom: 14 }}>
+                      <label className="label" style={{ fontSize: 11 }}>Decision</label>
+                      <select className="select" value={overrideStatus} onChange={e => setOverrideStatus(e.target.value)} style={{ padding: 8, fontSize: 13 }}>
+                        <option value="">Select decision...</option>
+                        <option value="ACCEPTED">APPROVE (ACCEPT RETURN)</option>
+                        <option value="REJECTED">REJECT RETURN</option>
+                      </select>
+                    </div>
+
+                    <div style={{ marginBottom: 16 }}>
+                      <label className="label" style={{ fontSize: 11 }}>Justification Note</label>
+                      <textarea className="input" style={{ minHeight: 60, resize: 'none', padding: 8, fontSize: 13 }} placeholder="Provide reasoning for admin decision..."
+                        value={overrideNote} onChange={e => setOverrideNote(e.target.value)} />
+                    </div>
+
+                    <div style={{ display: 'flex', gap: 8 }}>
+                      <button type="button" onClick={() => router.push(`/inspection/${selectedApproval.id}`)} className="btn-secondary" style={{ flex: 1, justifyContent: 'center', padding: 8, fontSize: 12 }}>
+                        Full Report
+                      </button>
+                      <button type="submit" disabled={overrideMutation.isPending} className="btn-primary" style={{ flex: 1.5, justifyContent: 'center', padding: 8, fontSize: 12 }}>
+                        {overrideMutation.isPending ? <Loader2 size={12} className="animate-spin-slow" /> : <UserCheck size={12} />}
+                        Submit Decision
+                      </button>
+                    </div>
+                  </form>
                 </div>
               )}
             </div>
