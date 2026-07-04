@@ -21,12 +21,37 @@ const PORT = process.env.PORT ?? 4000;
 
 // ─── Security Middleware ────────────────────────────────────────────────────
 app.use(helmet({ crossOriginResourcePolicy: { policy: 'cross-origin' } }));
-app.use(cors({
-  origin: process.env.CORS_ORIGIN ?? 'http://localhost:3000',
+
+// Build the allowed-origins list from env + hardcoded defaults.
+// CORS_ORIGINS (plural) accepts a comma-separated list, e.g.:
+//   https://mitsubishi-inspection-bot.vercel.app,http://localhost:3000
+const ALLOWED_ORIGINS: string[] = [
+  'http://localhost:3000',
+  'http://localhost:3001',
+  'https://mitsubishi-inspection-bot.vercel.app',
+  // Any extra origins injected at deploy time via env var
+  ...(process.env.CORS_ORIGINS ?? '').split(',').map((o) => o.trim()).filter(Boolean),
+];
+
+const corsOptions: cors.CorsOptions = {
+  origin: (requestOrigin, callback) => {
+    // Allow server-to-server requests (no Origin header) and listed origins.
+    if (!requestOrigin || ALLOWED_ORIGINS.includes(requestOrigin)) {
+      callback(null, true);
+    } else {
+      console.warn(`[CORS] Blocked request from origin: ${requestOrigin}`);
+      callback(new Error(`CORS policy: origin "${requestOrigin}" is not allowed.`));
+    }
+  },
   credentials: true,
-  methods: ['GET', 'POST', 'PUT', 'DELETE', 'OPTIONS'],
-  allowedHeaders: ['Content-Type', 'Authorization'],
-}));
+  methods: ['GET', 'POST', 'PUT', 'PATCH', 'DELETE', 'OPTIONS'],
+  allowedHeaders: ['Content-Type', 'Authorization', 'X-Requested-With'],
+  optionsSuccessStatus: 200, // Some legacy browsers (IE11) choke on 204
+};
+
+app.use(cors(corsOptions));
+// Explicitly handle OPTIONS preflight for all routes
+app.options('*', cors(corsOptions));
 app.use(compression());
 app.use(express.json({ limit: '50mb' }));
 app.use(express.urlencoded({ extended: true }));
