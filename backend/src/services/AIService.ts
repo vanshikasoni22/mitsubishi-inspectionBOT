@@ -38,6 +38,97 @@ export interface AIAnalysisResult {
 }
 
 
+// ─── Strict Verdict Decision Engine ───────────────────────────────────────
+// Hardcoded decision rules — overrides Gemini recommendations
+export function evaluateStrictVerdict(
+  damageType: string,
+  confidence: number,
+  severity: string,
+  geminiRecommendation?: string
+): { recommendation: 'REJECT' | 'MANUAL_REVIEW' | 'ACCEPT'; riskScore: 'HIGH' | 'MEDIUM' | 'LOW' } {
+  // Normalize confidence (0.95 -> 95, 95 -> 95)
+  const confPct = confidence <= 1 ? confidence * 100 : confidence;
+  
+  const rawType = (damageType || 'NONE').trim().toUpperCase();
+  const normType = rawType.replace(/ /g, '_');
+  const normSeverity = (severity || 'MINOR').trim().toUpperCase();
+
+  const isNoDefect = normType === 'NONE' || normType === 'NO_DEFECT' || rawType === 'NO DEFECT' || rawType === 'NONE';
+  const isDefectDetected = !isNoDefect && normType !== 'UNKNOWN';
+
+  const rejectDamageTypes = [
+    'SCRATCH',
+    'CRACK',
+    'SURFACE_CRACK',
+    'DENT',
+    'PAINT_PEEL',
+    'PAINT PEEL',
+    'TRANSPORT_DAMAGE',
+    'TRANSPORT DAMAGE',
+    'SURFACE_DAMAGE',
+    'SURFACE DAMAGE',
+    'RUST',
+    'CORROSION',
+    'PAINT_THICKNESS_ISSUE',
+    'LOOSE_FASTENER',
+    'MISSING_COMPONENT',
+    'OIL_LEAKAGE',
+    'IMPACT_MARK',
+    'WARPING'
+  ];
+
+  const isRejectDamageType = rejectDamageTypes.includes(normType) || rejectDamageTypes.includes(rawType);
+  const isRejectSeverity = normSeverity === 'MAJOR' || normSeverity === 'CRITICAL';
+  const isHighConfDefect = confPct > 70 && isDefectDetected;
+
+  // RULE 1: REJECT if ANY of these are true:
+  // - confidence score is above 70% AND defect is detected
+  // - damage type is SCRATCH, CRACK, DENT, PAINT PEEL, TRANSPORT DAMAGE, or SURFACE DAMAGE
+  // - severity is MAJOR or CRITICAL
+  if (isHighConfDefect || isRejectDamageType || isRejectSeverity) {
+    console.log(`[Strict Verdict] REJECT: conf=${confPct}%, damageType=${normType}, severity=${normSeverity}`);
+    return { recommendation: 'REJECT', riskScore: 'HIGH' };
+  }
+
+  // OVERRIDE RULE: If Gemini says ACCEPT but confidence is above 70% and a defect type is detected — force override to REJECT.
+  if (geminiRecommendation === 'ACCEPT' && confPct > 70 && isDefectDetected) {
+    console.log(`[Strict Verdict] REJECT (Force Override): Gemini ACCEPT overridden for conf=${confPct}%, damageType=${normType}`);
+    return { recommendation: 'REJECT', riskScore: 'HIGH' };
+  }
+
+  // RULE 2: MANUAL REVIEW if:
+  // - confidence score is between 40% and 70%
+  // - severity is MODERATE
+  // - AI is uncertain about defect type
+  const isModerateConf = confPct >= 40 && confPct <= 70;
+  const isModerateSeverity = normSeverity === 'MODERATE';
+  const isUncertain = normType === 'UNKNOWN' || !damageType;
+
+  if (isModerateConf || isModerateSeverity || isUncertain) {
+    console.log(`[Strict Verdict] MANUAL_REVIEW: conf=${confPct}%, damageType=${normType}, severity=${normSeverity}`);
+    return { recommendation: 'MANUAL_REVIEW', riskScore: 'MEDIUM' };
+  }
+
+  // RULE 3: ACCEPT only if:
+  // - confidence score is below 40% AND no clear defect detected
+  // - damage type is NONE or NO DEFECT
+  // - severity is MINOR AND confidence is below 50%
+  const isLowConfNoDefect = confPct < 40 && isNoDefect;
+  const isMinorLowConf = normSeverity === 'MINOR' && confPct < 50;
+
+  if (isNoDefect || isLowConfNoDefect || isMinorLowConf) {
+    console.log(`[Strict Verdict] ACCEPT: conf=${confPct}%, damageType=${normType}, severity=${normSeverity}`);
+    return { recommendation: 'ACCEPT', riskScore: 'LOW' };
+  }
+
+  // Fallback default: If defect is detected, REJECT
+  if (isDefectDetected) {
+    return { recommendation: 'REJECT', riskScore: 'HIGH' };
+  }
+
+  return { recommendation: 'ACCEPT', riskScore: 'LOW' };
+}
+
 // ─── Deterministic Damage Library ────────────────────────────────────────────
 // Each entry is a fixed, authoritative profile for a specific damage type.
 // Confidence is 100 — no randomness. Results are always consistent.
@@ -96,15 +187,15 @@ const DAMAGE_LIBRARY: Record<string, {
     suggestedNegotiationAmount: 1615,
   },
   SCRATCH: {
-    damageType: 'SCRATCH', severity: 'MINOR', confidence: 100,
-    recommendation: 'ACCEPT',
-    repairCost: 120, replacementCost: 300, paintCost: 80, laborCost: 48, downtimeCost: 300, warrantyImpact: 600,
-    cause: 'Surface contact during handling or shipping. Likely minor abrasion from packaging material.',
-    reasoning: 'Scratch is purely cosmetic and does not affect functional performance or structural geometry. Part dimensions are within OEM tolerance. Cleared for reuse with minor cosmetic note.',
-    oemLiability: 10, customerLiability: 50, transportLiability: 40, riskScore: 'LOW',
-    talkingPoints: ['Minor cosmetic damage — part functional integrity confirmed intact.', 'Transport carrier shares 40% cosmetic liability ($48). Minor claim worthwhile.', 'AI estimated repair cost: $120. No replacement required.', 'Part accepted. Move to accepted inventory with cosmetic flag.'],
-    negotiationSummary: 'Based on AI analysis, estimated total cost impact is $420. Cosmetic only. Recommended negotiation opening: $60.',
-    suggestedNegotiationAmount: 60,
+    damageType: 'SCRATCH', severity: 'MAJOR', confidence: 100,
+    recommendation: 'REJECT',
+    repairCost: 450, replacementCost: 1200, paintCost: 200, laborCost: 150, downtimeCost: 500, warrantyImpact: 1500,
+    cause: 'Surface contact and deep scratch abrasion during handling or shipping.',
+    reasoning: 'Scratch detected at high confidence. Part must be rejected per OEM quality assurance standards.',
+    oemLiability: 10, customerLiability: 50, transportLiability: 40, riskScore: 'HIGH',
+    talkingPoints: ['Scratch defect confirmed at high confidence — part rejected per OEM QA rules.', 'Transport carrier shares 40% liability.', 'AI estimated repair cost: $450.', 'Part rejected. Initiate return-to-supplier process.'],
+    negotiationSummary: 'Based on AI analysis, scratch defect requires part rejection. Recommended negotiation opening: $450.',
+    suggestedNegotiationAmount: 450,
   },
   IMPACT_MARK: {
     damageType: 'IMPACT_MARK', severity: 'MODERATE', confidence: 100,
@@ -425,6 +516,13 @@ Always calculate realistic costs in USD. Provide bounding boxes for each defect 
 
           if (parsed.damageType === 'CRACK') parsed.damageType = 'SURFACE_CRACK';
 
+          // Apply hardcoded strict decision rules — override Gemini recommendation
+          const verdict = evaluateStrictVerdict(parsed.damageType, parsed.confidence, parsed.severity, parsed.recommendation);
+          parsed.recommendation = verdict.recommendation;
+          parsed.riskScore = verdict.riskScore;
+
+          console.log(`[Gemini ${modelName}] 🎯 Final Strict Verdict: damageType=${parsed.damageType}, severity=${parsed.severity}, recommendation=${parsed.recommendation}, riskScore=${parsed.riskScore}`);
+
           return {
             ...parsed,
             limitations: `Analysis based on ${imageUrls.length} image(s). Internal structural damage may not be visible. Physical testing recommended for MAJOR/CRITICAL findings.`,
@@ -544,7 +642,14 @@ Always calculate realistic costs in USD. Provide bounding boxes for each defect 
       damageType = weightedFallback();
     }
 
-    const profile = DAMAGE_LIBRARY[damageType] || DAMAGE_LIBRARY.NONE;
+    const rawProfile = DAMAGE_LIBRARY[damageType] || DAMAGE_LIBRARY.NONE;
+    const verdict = evaluateStrictVerdict(rawProfile.damageType, rawProfile.confidence, rawProfile.severity, rawProfile.recommendation);
+
+    const profile = {
+      ...rawProfile,
+      recommendation: verdict.recommendation,
+      riskScore: verdict.riskScore,
+    };
 
     const confidence = profile.confidence;
     const repairCost = profile.repairCost;

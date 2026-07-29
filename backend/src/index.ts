@@ -98,6 +98,20 @@ app.use('/api/inspection', inspectionRoutes);
 app.use('/api/dashboard', dashboardRoutes);
 app.use('/api/admin', adminRoutes);
 
+// ─── Test Endpoint ──────────────────────────────────────────────────────────
+const testMockResponse = (_req: express.Request, res: express.Response) => {
+  return res.json({
+    defect_type: 'SCRATCH',
+    confidence: 0.95,
+    severity: 'MAJOR',
+    recommendation: 'REJECT',
+    reasoning: 'Scratch detected at 95% confidence. High severity defect. Part must be rejected per OEM standards.',
+    risk_score: 'HIGH'
+  });
+};
+app.get('/test', testMockResponse);
+app.get('/api/test', testMockResponse);
+
 // ─── Health Check ────────────────────────────────────────────────────────────
 app.get('/health', (_req, res) => {
   res.json({ status: 'ok', service: 'AutoInspect AI Backend', timestamp: new Date().toISOString(), version: '1.0.0' });
