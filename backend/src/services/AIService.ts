@@ -380,8 +380,46 @@ Return a structured JSON response matching the required schema.`;
             summaryText: `Part ${partNumber} analyzed via Gemini 1.5 Flash. ${parsed.damageType !== 'NONE' ? `${parsed.damageType.replace(/_/g, ' ')} detected with ${parsed.confidence}% confidence.` : 'No defects detected.'} Severity: ${parsed.severity}. AI Recommendation: ${parsed.recommendation.replace(/_/g, ' ')}.`,
           };
         }
-      } catch (error) {
-        console.error('[Gemini Flash] Failed to analyze, falling back to mock:', error);
+      } catch (error: any) {
+        console.error('[Gemini Flash] Exception during analysis:', error);
+
+        const errMsg = (error?.message || String(error)).toLowerCase();
+        const status = error?.status || error?.statusCode || error?.response?.status;
+        const isQuotaError =
+          status === 429 ||
+          errMsg.includes('429') ||
+          errMsg.includes('quota') ||
+          errMsg.includes('exhausted') ||
+          errMsg.includes('rate limit') ||
+          errMsg.includes('resource_exhausted') ||
+          errMsg.includes('toomanyrequests') ||
+          errMsg.includes('blockedprompt');
+
+        if (isQuotaError) {
+          const quotaErr: any = new Error('Gemini API key quota exhausted. Please try again later or contact admin to upgrade the API plan.');
+          quotaErr.error = 'GEMINI_QUOTA_EXHAUSTED';
+          quotaErr.status = 429;
+          quotaErr.statusCode = 429;
+          quotaErr.message = 'Gemini API key quota exhausted. Please try again later or contact admin to upgrade the API plan.';
+          quotaErr.recommendation = 'manual_review';
+          quotaErr.defects = [];
+          quotaErr.confidence_score = 0;
+          quotaErr.severity = 'unknown';
+          quotaErr.fallback = true;
+          throw quotaErr;
+        }
+
+        const generalErr: any = new Error('Image analysis failed. Please try again.');
+        generalErr.error = 'ANALYSIS_FAILED';
+        generalErr.status = 500;
+        generalErr.statusCode = 500;
+        generalErr.message = 'Image analysis failed. Please try again.';
+        generalErr.recommendation = 'manual_review';
+        generalErr.defects = [];
+        generalErr.confidence_score = 0;
+        generalErr.severity = 'unknown';
+        generalErr.fallback = true;
+        throw generalErr;
       }
     }
 

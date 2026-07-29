@@ -6,6 +6,7 @@ import { v4 as uuidv4 } from 'uuid';
 import { db, Inspection, ChecklistItem } from '../data/store';
 import { authenticate, requireRole } from '../middleware/auth';
 import { aiService } from '../services/AIService';
+import { analyzeInspection } from '../controllers/inspectionController';
 
 const router = Router();
 
@@ -131,64 +132,7 @@ router.post('/:id/upload', authenticate, upload.array('images', 10), (req: Reque
  *   post:
  *     summary: Run AI analysis on inspection
  */
-router.post('/:id/analyze', authenticate, async (req: Request, res: Response) => {
-  const inspection = db.findInspectionById(req.params.id);
-  if (!inspection) return res.status(404).json({ success: false, message: 'Inspection not found' });
-  if (!inspection.images.length) {
-    return res.status(400).json({ success: false, message: 'Upload at least one image before analyzing' });
-  }
-
-  try {
-    const imageUrls = inspection.images.map(img => img.url);
-    const result = await aiService.analyzeImages(imageUrls, inspection.partNumber, inspection.returnReason);
-
-    const aiAnalysis = {
-      id: uuidv4(),
-      inspectionId: inspection.id,
-      ...result,
-      analyzedAt: new Date(),
-    };
-
-    inspection.aiAnalysis = aiAnalysis;
-    inspection.status =
-      result.recommendation === 'ACCEPT' ? 'ACCEPTED' :
-      result.recommendation === 'REJECT' ? 'REJECTED' :
-      result.recommendation === 'CONDITIONAL_ACCEPT' ? 'ACCEPTED' :
-      'MANUAL_REVIEW';
-    inspection.completedAt = new Date();
-    inspection.inspectionDuration = Math.round((inspection.completedAt.getTime() - inspection.createdAt.getTime()) / 60000);
-    inspection.updatedAt = new Date();
-
-    // Update inspector stats
-    const inspector = db.findUserById(inspection.inspectorId);
-    if (inspector) {
-      inspector.totalInspections += 1;
-      inspector.averageTime = Math.round((inspector.averageTime * (inspector.totalInspections - 1) + (inspection.inspectionDuration ?? 20)) / inspector.totalInspections);
-    }
-
-    db.addAuditLog({
-      userId: req.user!.userId,
-      action: 'INSPECTION_ANALYZED',
-      entityType: 'Inspection',
-      entityId: inspection.id,
-      metadata: { damageType: result.damageType, confidence: result.confidence, recommendation: result.recommendation },
-      ipAddress: req.ip ?? '0.0.0.0',
-    });
-
-    db.addNotification({
-      userId: inspection.inspectorId,
-      type: 'INSPECTION_COMPLETED',
-      title: 'Analysis Complete',
-      message: `Inspection ${inspection.batchNumber} analyzed. Recommendation: ${result.recommendation}`,
-      read: false,
-    });
-
-    return res.json({ success: true, inspection, aiAnalysis });
-  } catch (err) {
-    console.error('AI analysis failed:', err);
-    return res.status(500).json({ success: false, message: 'AI analysis failed. Please try again.' });
-  }
-});
+router.post('/:id/analyze', authenticate, analyzeInspection);
 
 /**
  * @swagger
