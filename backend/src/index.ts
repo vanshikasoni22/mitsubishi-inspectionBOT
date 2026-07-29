@@ -24,20 +24,25 @@ const PORT = process.env.PORT ?? 4000;
 app.use(helmet({ crossOriginResourcePolicy: { policy: 'cross-origin' } }));
 
 // Build the allowed-origins list from env + hardcoded defaults.
-// CORS_ORIGINS (plural) accepts a comma-separated list, e.g.:
-//   https://mitsubishi-inspection-bot.vercel.app,http://localhost:3000
 const ALLOWED_ORIGINS: string[] = [
   'http://localhost:3000',
   'http://localhost:3001',
   'https://mitsubishi-inspection-bot.vercel.app',
-  // Any extra origins injected at deploy time via env var
   ...(process.env.CORS_ORIGINS ?? '').split(',').map((o) => o.trim()).filter(Boolean),
+  ...(process.env.CORS_ORIGIN ? [process.env.CORS_ORIGIN.trim()] : []),
 ];
+
+const isAllowedOrigin = (origin?: string): boolean => {
+  if (!origin) return true;
+  if (ALLOWED_ORIGINS.includes(origin)) return true;
+  if (/\.vercel\.app$/.test(origin)) return true;
+  if (/^http:\/\/(localhost|127\.0\.0\.1)(:\d+)?$/.test(origin)) return true;
+  return false;
+};
 
 const corsOptions: cors.CorsOptions = {
   origin: (requestOrigin, callback) => {
-    // Allow server-to-server requests (no Origin header) and listed origins.
-    if (!requestOrigin || ALLOWED_ORIGINS.includes(requestOrigin)) {
+    if (isAllowedOrigin(requestOrigin)) {
       callback(null, true);
     } else {
       console.warn(`[CORS] Blocked request from origin: ${requestOrigin}`);

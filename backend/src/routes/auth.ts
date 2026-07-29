@@ -15,16 +15,18 @@ const router = Router();
  */
 router.post('/login', async (req: Request, res: Response) => {
   const { email, password } = req.body;
-  if (!email || !password) {
+  if (!email || !password || typeof email !== 'string' || typeof password !== 'string') {
     return res.status(400).json({ success: false, message: 'Email and password required' });
   }
-  const user = db.findUserByEmail(email);
+  const cleanEmail = email.trim().toLowerCase();
+  const cleanPassword = password.trim();
+  const user = db.findUserByEmail(cleanEmail);
   if (!user || !user.isActive) {
-    return res.status(401).json({ success: false, message: 'Invalid credentials' });
+    return res.status(401).json({ success: false, message: 'Invalid email or password' });
   }
-  const valid = await bcrypt.compare(password, user.passwordHash);
+  const valid = await bcrypt.compare(cleanPassword, user.passwordHash);
   if (!valid) {
-    return res.status(401).json({ success: false, message: 'Invalid credentials' });
+    return res.status(401).json({ success: false, message: 'Invalid email or password' });
   }
   const payload: JWTPayload = { userId: user.id, email: user.email, role: user.role };
   const token = generateToken(payload);
