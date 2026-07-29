@@ -327,10 +327,16 @@ export class AIService {
   ): Promise<AIAnalysisResult> {
     const geminiKey = process.env.GEMINI_API_KEY;
     if (geminiKey) {
+      // Try models in priority order — fall through to next on 503 overload
+      const GEMINI_MODELS = ['gemini-flash-latest', 'gemini-2.5-flash', 'gemini-2.5-pro', 'gemini-3-flash-preview'];
+      let lastError: any = null;
+
+      for (const modelName of GEMINI_MODELS) {
       try {
         const genAI = new GoogleGenerativeAI(geminiKey);
+        console.log(`[Gemini] Trying model: ${modelName}`);
         const model = genAI.getGenerativeModel({
-          model: 'gemini-2.5-flash',
+          model: modelName,
           generationConfig: {
             responseMimeType: 'application/json',
             responseSchema: {
@@ -391,53 +397,53 @@ export class AIService {
           const partData = await this.resolveImagePart(imgUrl);
           if (partData) {
             imageParts.push(partData);
+          } else {
+            console.warn(`[Gemini] ⚠️ Could not resolve image URL to bytes: ${imgUrl}`);
           }
         }
 
-        if (imageParts.length > 0) {
-          console.log(`[Gemini Flash] Analyzing ${imageParts.length} image(s) for part ${partNumber} with reason: "${returnReason}"`);
-          const prompt = `You are an expert automotive quality control & defect assessment AI bot for Mitsubishi Electric / Mitsubishi Motors.
-Examine the attached image(s) for returned automotive part (Part Number: ${partNumber}) where reported return note is: "${returnReason}".
+        console.log(`[Gemini] Resolved ${imageParts.length}/${imageUrls.length} images. URLs: ${JSON.stringify(imageUrls)}`);
 
-STRICT DAMAGE CLASSIFICATION RULES:
-1. Examine the photo(s) with extreme precision.
-2. IF YOU SEE ANY BODY COLLISION DAMAGE, CRUSHED METAL, BENT STRUCTURAL PANELS, BROKEN HOUSINGS, IMPACT DEFORMATION, ACCIDENT CRASH DAMAGE, DEEP DENTS, OR CRACKED PARTS:
-   - Set damageType = 'DENT' or 'SURFACE_CRACK'
-   - Set severity = 'CRITICAL' or 'MAJOR'
-   - Set recommendation = 'REJECT'
-   - Set riskScore = 'HIGH'
-   - Set confidence = 95 to 100
-   - Calculate realistic repairCost ($1500-$4000), replacementCost ($3500-$9000), downtimeCost ($2000+), warrantyImpact ($4000+)
-   - Set liability split: oemLiability (15-25%), customerLiability (20-40%), transportLiability (50-75%)
-3. IF YOU SEE RUST, ACTIVE CORROSION, PAINT DELAMINATION, FLUID LEAKS, OR MISSING COMPONENTS:
-   - Set recommendation = 'REJECT' or 'MANUAL_REVIEW'
-   - Set severity = 'MAJOR' or 'MODERATE'
-   - Set riskScore = 'HIGH' or 'MEDIUM'
-4. DO NOT SET RECOMMENDATION TO 'ACCEPT' UNLESS THE PART IS 100% PRISTINE, COMPLETELY UNDAMAGED, OR HAS ONLY NEGLIGIBLE HAIRLINE COSMETIC ABRASION.
-5. Provide visual bounding boxes [x, y, width, height] (0-100 normalized percentages) accurately outlining each defect zone in the photo.
-6. Provide specific supplier negotiation talking points and a summary.`;
+        if (imageParts.length > 0) {
+          console.log(`[Gemini ${modelName}] Analyzing ${imageParts.length} image(s) for part ${partNumber}`);
+          const prompt = `You are an expert automotive quality control & defect assessment AI for Mitsubishi Electric.
+Return JSON only. Analyze the image(s) for returned part ${partNumber}. Return reason: "${returnReason}".
+
+DAMAGE CLASSIFICATION:
+- If you see ANY: collision damage, crushed metal, bent panels, broken housing, impact deformation, deep dents, cracks — set recommendation=REJECT, severity=CRITICAL or MAJOR, riskScore=HIGH, confidence 95-100, damageType=DENT or SURFACE_CRACK
+- If you see: rust, corrosion, paint damage, fluid leaks, missing parts — set recommendation=REJECT or MANUAL_REVIEW, severity=MAJOR or MODERATE, riskScore=HIGH or MEDIUM  
+- Set recommendation=ACCEPT ONLY if part is completely pristine with zero visible damage.
+
+Always calculate realistic costs in USD. Provide bounding boxes for each defect (x,y,width,height as 0-100 percentages). Provide negotiation talking points.`;
 
           const result = await model.generateContent([prompt, ...imageParts]);
           const responseText = result.response.text();
-          console.log(`[Gemini Flash] Response received.`);
+          console.log(`[Gemini ${modelName}] Raw response:`, responseText.substring(0, 500));
           const parsed = JSON.parse(responseText);
 
-          if (parsed.damageType === 'CRACK') {
-            parsed.damageType = 'SURFACE_CRACK';
-          }
+          console.log(`[Gemini ${modelName}] ✅ Parsed: damageType=${parsed.damageType}, severity=${parsed.severity}, recommendation=${parsed.recommendation}, confidence=${parsed.confidence}`);
+
+          if (parsed.damageType === 'CRACK') parsed.damageType = 'SURFACE_CRACK';
 
           return {
             ...parsed,
-            limitations: `Analysis based on ${imageUrls.length} image(s). Internal structural damage may not be visible. Physical mechanical testing recommended for MAJOR/CRITICAL findings.`,
+            limitations: `Analysis based on ${imageUrls.length} image(s). Internal structural damage may not be visible. Physical testing recommended for MAJOR/CRITICAL findings.`,
             nextAction: this.getNextAction(parsed.recommendation, parsed.damageType),
-            summaryText: `Part ${partNumber} analyzed via Gemini 2.5 Flash. ${parsed.damageType !== 'NONE' ? `${parsed.damageType.replace(/_/g, ' ')} detected with ${parsed.confidence}% confidence.` : 'No defects detected.'} Severity: ${parsed.severity}. AI Recommendation: ${parsed.recommendation.replace(/_/g, ' ')}.`,
+            summaryText: `Part ${partNumber} analyzed via Gemini Vision (${modelName}). ${parsed.damageType !== 'NONE' ? `${parsed.damageType.replace(/_/g, ' ')} detected with ${parsed.confidence}% confidence.` : 'No defects detected.'} Severity: ${parsed.severity}. AI Recommendation: ${parsed.recommendation.replace(/_/g, ' ')}.`,
           };
+        } else {
+          console.error(`[Gemini] ❌ NO IMAGE DATA SENT TO GEMINI — imageParts is empty! URLs were: ${JSON.stringify(imageUrls)}. Gemini cannot analyze without images — falling through to fallback.`);
         }
-      } catch (error: any) {
-        console.error('[Gemini Flash] Exception during analysis:', error);
 
+        // If imageParts empty, break out — no point trying other models
+        break;
+      } catch (error: any) {
         const errMsg = (error?.message || String(error)).toLowerCase();
         const status = error?.status || error?.statusCode || error?.response?.status;
+
+        console.error(`[Gemini ${modelName}] ❌ Error (status=${status}):`, error?.message || error);
+
+        const isOverloaded = status === 503 || errMsg.includes('503') || errMsg.includes('overload') || errMsg.includes('service unavailable') || errMsg.includes('high demand');
         const isQuotaError =
           status === 429 ||
           errMsg.includes('429') ||
@@ -453,26 +459,26 @@ STRICT DAMAGE CLASSIFICATION RULES:
           quotaErr.error = 'GEMINI_QUOTA_EXHAUSTED';
           quotaErr.status = 429;
           quotaErr.statusCode = 429;
-          quotaErr.message = 'Gemini API key quota exhausted. Please try again later or contact admin to upgrade the API plan.';
           quotaErr.recommendation = 'manual_review';
-          quotaErr.defects = [];
-          quotaErr.confidence_score = 0;
-          quotaErr.severity = 'unknown';
           quotaErr.fallback = true;
           throw quotaErr;
         }
 
-        const generalErr: any = new Error('Image analysis failed. Please try again.');
-        generalErr.error = 'ANALYSIS_FAILED';
-        generalErr.status = 500;
-        generalErr.statusCode = 500;
-        generalErr.message = 'Image analysis failed. Please try again.';
-        generalErr.recommendation = 'manual_review';
-        generalErr.defects = [];
-        generalErr.confidence_score = 0;
-        generalErr.severity = 'unknown';
-        generalErr.fallback = true;
-        throw generalErr;
+        if (isOverloaded) {
+          console.warn(`[Gemini ${modelName}] 503 overloaded — trying next model in list...`);
+          lastError = error;
+          continue; // try next model
+        }
+
+        // Non-overload, non-quota error: log and fall through to mock fallback
+        console.error(`[Gemini ${modelName}] Unrecoverable error — falling through to mock fallback:`, error?.message);
+        lastError = error;
+        break;
+      }
+      } // end for (const modelName of GEMINI_MODELS)
+
+      if (lastError) {
+        console.error('[Gemini] All Gemini models failed. Last error:', lastError?.message, '— Using mock fallback.');
       }
     }
 
