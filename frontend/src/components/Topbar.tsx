@@ -45,10 +45,10 @@ export default function Topbar({ title, subtitle }: TopbarProps) {
       <div style={{ display: 'flex', alignItems: 'center', gap: '12px', flex: 1 }}>
         <div style={{
           width: 28, height: 28, borderRadius: 8, flexShrink: 0,
-          background: 'linear-gradient(135deg, #0066CC 0%, #00D4FF 100%)',
+          background: 'linear-gradient(135deg, #E60012 0%, #FF3344 100%)',
           display: 'flex', alignItems: 'center', justifyContent: 'center',
           fontSize: '11px', fontWeight: 900, color: 'white', letterSpacing: '-0.02em',
-          boxShadow: '0 2px 8px rgba(0,102,204,0.35)',
+          boxShadow: '0 2px 8px rgba(230,0,18,0.35)',
         }}>
           AT
         </div>

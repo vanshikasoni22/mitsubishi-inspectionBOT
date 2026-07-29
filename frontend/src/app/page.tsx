@@ -43,10 +43,10 @@ export default function LandingPage() {
         <div style={{ display: 'flex', alignItems: 'center', gap: 12 }}>
           <div style={{
             width: 36, height: 36, borderRadius: 10, flexShrink: 0,
-            background: 'linear-gradient(135deg, #0066CC 0%, #00D4FF 100%)',
+            background: 'linear-gradient(135deg, #E60012 0%, #FF3344 100%)',
             display: 'flex', alignItems: 'center', justifyContent: 'center',
             fontSize: '14px', fontWeight: 900, color: 'white', letterSpacing: '-0.03em',
-            boxShadow: '0 4px 12px rgba(0,102,204,0.4)',
+            boxShadow: '0 4px 12px rgba(230,0,18,0.4)',
           }}>
             AT
           </div>
@@ -66,7 +66,7 @@ export default function LandingPage() {
         {/* Animated background grid */}
         <div style={{
           position: 'absolute', inset: 0, opacity: 0.08,
-          backgroundImage: 'linear-gradient(rgba(0,102,204,0.5) 1px, transparent 1px), linear-gradient(90deg, rgba(0,102,204,0.5) 1px, transparent 1px)',
+          backgroundImage: 'linear-gradient(rgba(230,0,18,0.5) 1px, transparent 1px), linear-gradient(90deg, rgba(230,0,18,0.5) 1px, transparent 1px)',
           backgroundSize: '60px 60px',
           maskImage: 'radial-gradient(ellipse at center, black 30%, transparent 70%)',
         }} />
@@ -295,7 +295,7 @@ export default function LandingPage() {
                   background: 'linear-gradient(135deg, var(--primary) 0%, var(--accent) 100%)',
                   display: 'flex', alignItems: 'center', justifyContent: 'center',
                   margin: '0 auto 20px',
-                  boxShadow: '0 8px 24px rgba(0,102,204,0.4)',
+                  boxShadow: '0 8px 24px rgba(230,0,18,0.4)',
                   fontSize: 16, fontWeight: 800, color: 'white',
                 }}>
                   {s.num}
@@ -346,7 +346,7 @@ export default function LandingPage() {
         <div style={{ display: 'flex', alignItems: 'center', gap: 10 }}>
           <div style={{
             width: 28, height: 28, borderRadius: 8, flexShrink: 0,
-            background: 'linear-gradient(135deg, #0066CC 0%, #00D4FF 100%)',
+            background: 'linear-gradient(135deg, #E60012 0%, #FF3344 100%)',
             display: 'flex', alignItems: 'center', justifyContent: 'center',
             fontSize: '11px', fontWeight: 900, color: 'white',
           }}>AT</div>

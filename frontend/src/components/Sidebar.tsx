@@ -40,10 +40,10 @@ export default function Sidebar() {
         <Link href="/dashboard" style={{ textDecoration: 'none', display: 'flex', alignItems: 'center', gap: '12px' }}>
           <div style={{
             width: 34, height: 34, borderRadius: 10, flexShrink: 0,
-            background: 'linear-gradient(135deg, #0066CC 0%, #00D4FF 100%)',
+            background: 'linear-gradient(135deg, #E60012 0%, #FF3344 100%)',
             display: 'flex', alignItems: 'center', justifyContent: 'center',
             fontSize: '14px', fontWeight: 900, color: 'white', letterSpacing: '-0.03em',
-            boxShadow: '0 4px 12px rgba(0,102,204,0.4)',
+            boxShadow: '0 4px 12px rgba(230,0,18,0.4)',
           }}>
             AT
           </div>
@@ -69,7 +69,7 @@ export default function Sidebar() {
             <div style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
               <div style={{
                 width: 36, height: 36, borderRadius: '50%',
-                background: 'linear-gradient(135deg, #0066CC, #00D4FF)',
+                background: 'linear-gradient(135deg, #E60012, #FF3344)',
                 display: 'flex', alignItems: 'center', justifyContent: 'center',
                 fontSize: '14px', fontWeight: 700, color: 'white', flexShrink: 0,
               }}>
