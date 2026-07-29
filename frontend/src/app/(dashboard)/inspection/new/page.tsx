@@ -1,37 +1,16 @@
 'use client';
-import { useState, useCallback, useEffect } from 'react';
+import { useState, useCallback } from 'react';
 import { useRouter } from 'next/navigation';
 import { motion, AnimatePresence } from 'framer-motion';
-import { useQuery } from '@tanstack/react-query';
 import { useDropzone } from 'react-dropzone';
 import toast from 'react-hot-toast';
 import {
   ChevronRight, ChevronLeft, Upload, Camera, X, CheckCircle,
   Loader2, Brain, Zap, FileText, AlertTriangle, Shield
 } from 'lucide-react';
-import { inspectionApi, adminApi } from '@/lib/api';
+import { inspectionApi } from '@/lib/api';
 import Topbar from '@/components/Topbar';
 import CameraCapture from '@/components/CameraCapture';
-
-const RETURN_REASONS = [
-  'Customer Complaint - Cosmetic Damage',
-  'Assembly Line Rejection - Dimensional',
-  'Warranty Claim - Premature Failure',
-  'Incoming Quality Control Rejection',
-  'Transport Damage Claim',
-  'Wrong Part Delivered',
-  'Batch Recall',
-  'End of Life Return',
-  'Quality Audit Finding',
-  'Customer Change of Mind',
-];
-
-const VEHICLE_MODELS = [
-  'BMW 5 Series 2023', 'Mercedes C-Class 2024', 'Audi A4 2023',
-  'Toyota Camry 2024', 'Ford F-150 2023', 'Honda Accord 2024',
-  'Volkswagen Golf 2023', 'Hyundai Sonata 2024', 'Kia EV6 2023',
-  'Tesla Model 3 2024', 'Volvo XC90 2023', 'BMW iX 2024',
-];
 
 const STEPS = ['Part Details', 'Capture Images', 'AI Analysis'];
 
@@ -55,16 +34,7 @@ export default function NewInspectionPage() {
     setPreviewUrls(urls);
   };
 
-  const [form, setForm] = useState({
-    partNumber: '', oemId: '', supplierId: '', vehicleModel: '',
-    batchNumber: '', returnReason: '',
-  });
-
-  const { data: oemsData } = useQuery({ queryKey: ['oems'], queryFn: () => adminApi.getOems().then(r => r.data.oems) });
-  const { data: suppliersData } = useQuery({ queryKey: ['suppliers'], queryFn: () => adminApi.getSuppliers().then(r => r.data.suppliers) });
-
-  const oems = oemsData ?? [];
-  const suppliers = suppliersData ?? [];
+  const [form, setForm] = useState({ partNumber: '', partName: '' });
 
   const onDrop = useCallback((accepted: File[]) => {
     const newFiles = [...uploadedFiles, ...accepted].slice(0, 10);
@@ -85,13 +55,13 @@ export default function NewInspectionPage() {
 
   // Step 1: Create inspection
   const handleCreateInspection = async () => {
-    if (!form.partNumber || !form.oemId || !form.supplierId || !form.vehicleModel || !form.batchNumber || !form.returnReason) {
-      toast.error('Please fill all required fields');
+    if (!form.partNumber.trim()) {
+      toast.error('Please enter a Part Code / Part Number');
       return;
     }
     setLoading(true);
     try {
-      const res = await inspectionApi.create(form);
+      const res = await inspectionApi.create({ partNumber: form.partNumber.trim(), partName: form.partName.trim() });
       setInspectionId(res.data.inspection.id);
       if (res.data.duplicate) {
         setDuplicate(res.data.duplicate);
@@ -196,57 +166,42 @@ export default function NewInspectionPage() {
             <motion.div key="step0" initial={{ opacity: 0, x: 20 }} animate={{ opacity: 1, x: 0 }} exit={{ opacity: 0, x: -20 }}>
               <div className="glass-card" style={{ padding: 32 }}>
                 <h2 style={{ fontSize: 20, fontWeight: 700, marginBottom: 8 }}>Part Information</h2>
-                <p style={{ color: 'var(--text-secondary)', fontSize: 14, marginBottom: 28 }}>Enter the details about the returned automotive part.</p>
+                <p style={{ color: 'var(--text-secondary)', fontSize: 14, marginBottom: 28 }}>Enter the part details to begin the inspection.</p>
 
-                <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 20 }}>
+                <div style={{ display: 'flex', flexDirection: 'column', gap: 20, maxWidth: 560 }}>
                   <div>
-                    <label className="label">Part Number *</label>
-                    <input className="input" placeholder="e.g. ENG-45678-A" value={form.partNumber}
-                      onChange={e => setForm({ ...form, partNumber: e.target.value })} />
+                    <label className="label">Part Code / Part Number *</label>
+                    <input
+                      id="part-code"
+                      className="input"
+                      placeholder="e.g. ENG-45678-A"
+                      value={form.partNumber}
+                      onChange={e => setForm({ ...form, partNumber: e.target.value })}
+                      autoFocus
+                    />
+                    <p style={{ fontSize: 12, color: 'var(--text-muted)', marginTop: 6 }}>Enter the unique part code or SKU for this component.</p>
                   </div>
                   <div>
-                    <label className="label">Batch Number *</label>
-                    <input className="input" placeholder="e.g. BATCH-2024-0001" value={form.batchNumber}
-                      onChange={e => setForm({ ...form, batchNumber: e.target.value })} />
-                  </div>
-                  <div>
-                    <label className="label">OEM *</label>
-                    <select className="select" value={form.oemId} onChange={e => setForm({ ...form, oemId: e.target.value })}>
-                      <option value="">Select OEM...</option>
-                      {oems.map((o: any) => <option key={o.id} value={o.id}>{o.name} ({o.country})</option>)}
-                    </select>
-                  </div>
-                  <div>
-                    <label className="label">Supplier *</label>
-                    <select className="select" value={form.supplierId} onChange={e => setForm({ ...form, supplierId: e.target.value })}>
-                      <option value="">Select Supplier...</option>
-                      {suppliers.map((s: any) => <option key={s.id} value={s.id}>{s.name} (⭐ {s.rating})</option>)}
-                    </select>
-                  </div>
-                  <div>
-                    <label className="label">Vehicle Model *</label>
-                    <select className="select" value={form.vehicleModel} onChange={e => setForm({ ...form, vehicleModel: e.target.value })}>
-                      <option value="">Select Vehicle...</option>
-                      {VEHICLE_MODELS.map(v => <option key={v} value={v}>{v}</option>)}
-                    </select>
-                  </div>
-                  <div>
-                    <label className="label">Return Reason *</label>
-                    <select className="select" value={form.returnReason} onChange={e => setForm({ ...form, returnReason: e.target.value })}>
-                      <option value="">Select reason...</option>
-                      {RETURN_REASONS.map(r => <option key={r} value={r}>{r}</option>)}
-                    </select>
+                    <label className="label">Part Name</label>
+                    <input
+                      id="part-name"
+                      className="input"
+                      placeholder="e.g. Engine Crankshaft Assembly"
+                      value={form.partName}
+                      onChange={e => setForm({ ...form, partName: e.target.value })}
+                    />
+                    <p style={{ fontSize: 12, color: 'var(--text-muted)', marginTop: 6 }}>Optional descriptive name for the part.</p>
                   </div>
                 </div>
 
                 {duplicate && (
                   <div style={{ marginTop: 20, padding: '12px 16px', background: 'var(--warning-bg)', border: '1px solid rgba(255,179,0,0.3)', borderRadius: 10, display: 'flex', gap: 10, alignItems: 'center' }}>
                     <AlertTriangle size={16} style={{ color: 'var(--warning)', flexShrink: 0 }} />
-                    <span style={{ fontSize: 13, color: 'var(--warning)' }}>⚠️ A similar inspection for this part was recorded {new Date(duplicate.createdAt).toLocaleDateString()}. Please confirm this is a new return.</span>
+                    <span style={{ fontSize: 13, color: 'var(--warning)' }}>⚠️ A similar inspection for this part was recorded {new Date(duplicate.createdAt).toLocaleDateString()}. Please confirm this is a new inspection.</span>
                   </div>
                 )}
 
-                <div style={{ display: 'flex', justifyContent: 'flex-end', marginTop: 28 }}>
+                <div style={{ display: 'flex', justifyContent: 'flex-end', marginTop: 32 }}>
                   <button onClick={handleCreateInspection} disabled={loading} className="btn-primary" style={{ padding: '11px 24px' }}>
                     {loading ? <Loader2 size={16} className="animate-spin-slow" /> : <ChevronRight size={16} />}
                     {loading ? 'Creating...' : 'Next: Upload Images'}
@@ -547,7 +502,7 @@ export default function NewInspectionPage() {
                     <button onClick={() => {
                       setStep(0); setInspectionId(null); setUploadedFiles([]); setPreviewUrls([]);
                       setAnalysisResult(null); setAnalysisProgress(0);
-                      setForm({ partNumber: '', oemId: '', supplierId: '', vehicleModel: '', batchNumber: '', returnReason: '' });
+                      setForm({ partNumber: '', partName: '' });
                     }} className="btn-secondary">
                       New Inspection
                     </button>

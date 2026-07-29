@@ -40,40 +40,45 @@ const upload = multer({
  *     summary: Create new inspection
  */
 router.post('/create', authenticate, (req: Request, res: Response) => {
-  const { partNumber, oemId, supplierId, vehicleModel, batchNumber, returnReason } = req.body;
-  if (!partNumber || !oemId || !supplierId || !vehicleModel || !batchNumber || !returnReason) {
-    return res.status(400).json({ success: false, message: 'All part fields are required' });
+  // Simplified form: only partNumber and partName are required.
+  // All other fields are auto-generated defaults.
+  const { partNumber, partName } = req.body;
+  if (!partNumber) {
+    return res.status(400).json({ success: false, message: 'Part Code / Part Number is required' });
   }
 
-  // Check for duplicate
+  // Auto-fill legacy fields so rest of the system keeps working
+  const resolvedPartName = (partName ?? '').trim() || partNumber;
+  const autoOemId  = db.oems[0]?.id  ?? 'default-oem';
+  const autoSuppId = db.suppliers[0]?.id ?? 'default-supp';
+  const autoBatch  = `BATCH-${Date.now()}`;
+
+  // Check for duplicate (same part code within last 7 days)
   const existing = db.inspections.find(i =>
-    i.partNumber === partNumber && i.batchNumber === batchNumber &&
+    i.partNumber === partNumber &&
     new Date().getTime() - i.createdAt.getTime() < 7 * 86400000
   );
 
   const inspection: Inspection = {
     id: uuidv4(),
     partNumber,
-    oemId,
-    supplierId,
-    vehicleModel,
-    batchNumber,
-    returnReason,
-    status: 'PENDING',
-    inspectorId: req.user!.userId,
+    oemId:         autoOemId,
+    supplierId:    autoSuppId,
+    vehicleModel:  resolvedPartName,   // repurpose vehicleModel to store part name
+    batchNumber:   autoBatch,
+    returnReason:  'Standard Inspection',
+    status:        'PENDING',
+    inspectorId:   req.user!.userId,
     images: [],
     negotiationNotes: [],
     checklist: [
-      { id: uuidv4(), label: 'Part number verified', checked: false },
-      { id: uuidv4(), label: 'Serial number recorded', checked: false },
-      { id: uuidv4(), label: 'Packaging condition noted', checked: false },
-      { id: uuidv4(), label: 'Multiple photos captured', checked: false },
-      { id: uuidv4(), label: 'Barcode scanned', checked: false },
-      { id: uuidv4(), label: 'OEM specification checked', checked: false },
-      { id: uuidv4(), label: 'Damage area measured', checked: false },
+      { id: uuidv4(), label: 'Part code verified',          checked: false },
+      { id: uuidv4(), label: 'Physical condition noted',    checked: false },
+      { id: uuidv4(), label: 'Multiple photos captured',    checked: false },
+      { id: uuidv4(), label: 'Damage area identified',      checked: false },
     ],
-    createdAt: new Date(),
-    updatedAt: new Date(),
+    createdAt:  new Date(),
+    updatedAt:  new Date(),
   };
 
   db.addInspection(inspection);
@@ -82,7 +87,7 @@ router.post('/create', authenticate, (req: Request, res: Response) => {
     action: 'INSPECTION_CREATED',
     entityType: 'Inspection',
     entityId: inspection.id,
-    metadata: { partNumber, oemId, supplierId },
+    metadata: { partNumber, partName: resolvedPartName },
     ipAddress: req.ip ?? '0.0.0.0',
   });
 

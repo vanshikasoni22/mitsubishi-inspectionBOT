@@ -38,19 +38,21 @@ export default function Sidebar() {
       {/* Logo */}
       <div style={{ padding: '24px 20px 16px', borderBottom: '1px solid var(--glass-border)' }}>
         <Link href="/dashboard" style={{ textDecoration: 'none', display: 'flex', alignItems: 'center', gap: '12px' }}>
-          <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0 }}>
-            <svg width="34" height="30" viewBox="0 0 100 90" fill="none" xmlns="http://www.w3.org/2000/svg">
-              <polygon points="50,46 64.4,21 50,0 35.6,21" fill="#E60012" />
-              <polygon points="46.5,50 17.7,50 3.3,75 32.1,75" fill="#E60012" />
-              <polygon points="53.5,50 67.9,75 96.7,75 82.3,50" fill="#E60012" />
-            </svg>
+          <div style={{
+            width: 34, height: 34, borderRadius: 10, flexShrink: 0,
+            background: 'linear-gradient(135deg, #0066CC 0%, #00D4FF 100%)',
+            display: 'flex', alignItems: 'center', justifyContent: 'center',
+            fontSize: '14px', fontWeight: 900, color: 'white', letterSpacing: '-0.03em',
+            boxShadow: '0 4px 12px rgba(0,102,204,0.4)',
+          }}>
+            AT
           </div>
           <div>
             <div style={{ fontSize: '13px', fontWeight: 800, color: 'var(--text-primary)', letterSpacing: '0.04em', textTransform: 'uppercase' }}>
-              MITSUBISHI
+              ABHIWAN
             </div>
             <div style={{ fontSize: '9px', color: 'var(--accent)', fontWeight: 600, letterSpacing: '0.02em', textTransform: 'uppercase' }}>
-              ELECTRIC
+              TECHNOLOGY
             </div>
           </div>
         </Link>

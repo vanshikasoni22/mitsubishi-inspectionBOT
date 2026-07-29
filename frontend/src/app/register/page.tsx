@@ -29,7 +29,7 @@ export default function RegisterPage() {
     try {
       await authApi.register(form);
       await login(form.email, form.password);
-      toast.success('Account created! Welcome to AutoInspect AI.');
+      toast.success('Account created! Welcome to Abhiwan Technology AI.');
       router.push('/dashboard');
     } catch (err: any) {
       toast.error(err.response?.data?.message ?? 'Registration failed');
@@ -44,10 +44,10 @@ export default function RegisterPage() {
         {/* Left Info */}
         <motion.div initial={{ opacity: 0, x: -20 }} animate={{ opacity: 1, x: 0 }} style={{ flex: 1, paddingTop: 40 }}>
           <Link href="/" style={{ display: 'flex', alignItems: 'center', gap: 12, textDecoration: 'none', marginBottom: 40 }}>
-            <div style={{ width: 40, height: 40, borderRadius: 12, background: 'linear-gradient(135deg, #0066CC, #00D4FF)', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
-              <Cpu size={22} color="white" />
+            <div style={{ width: 40, height: 40, borderRadius: 12, background: 'linear-gradient(135deg, #0066CC, #00D4FF)', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: '16px', fontWeight: 900, color: 'white' }}>
+              AT
             </div>
-            <span style={{ fontSize: 18, fontWeight: 800 }}>AutoInspect AI</span>
+            <span style={{ fontSize: 18, fontWeight: 800 }}>Abhiwan Technology</span>
           </Link>
           <h2 style={{ fontSize: 32, fontWeight: 800, letterSpacing: '-0.02em', marginBottom: 16 }}>
             Join the future of<br /><span className="gradient-text">automotive inspection</span>

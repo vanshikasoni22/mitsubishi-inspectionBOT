@@ -264,7 +264,7 @@ export default function InspectionDetailPage() {
 
   return (
     <div>
-      <Topbar title={`Inspection: ${inspection.batchNumber}`} subtitle={`Part: ${inspection.partNumber} · ${inspection.vehicleModel}`} />
+      <Topbar title={`Inspection: ${inspection.partNumber}`} subtitle={`Part Name: ${inspection.vehicleModel ?? '—'}`} />
       <div style={{ padding: '24px' }} ref={reportRef}>
         {/* Header Bar */}
         <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 24, flexWrap: 'wrap', gap: 12 }}>

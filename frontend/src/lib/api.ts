@@ -44,10 +44,7 @@ export const authApi = {
 
 // ─── Inspection ──────────────────────────────────────────────────────────────
 export const inspectionApi = {
-  create: (data: {
-    partNumber: string; oemId: string; supplierId: string;
-    vehicleModel: string; batchNumber: string; returnReason: string;
-  }) => api.post('/api/inspection/create', data),
+  create: (data: { partNumber: string; partName?: string }) => api.post('/api/inspection/create', data),
 
   uploadImages: (id: string, files: File[]) => {
     const formData = new FormData();
