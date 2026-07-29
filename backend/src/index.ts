@@ -4,6 +4,7 @@ import helmet from 'helmet';
 import compression from 'compression';
 import morgan from 'morgan';
 import path from 'path';
+import fs from 'fs';
 import rateLimit from 'express-rate-limit';
 import swaggerJSDoc from 'swagger-jsdoc';
 import swaggerUi from 'swagger-ui-express';
@@ -62,7 +63,11 @@ const limiter = rateLimit({ windowMs: 15 * 60 * 1000, max: 200 });
 app.use('/api', limiter);
 
 // ─── Static Files ───────────────────────────────────────────────────────────
-app.use('/uploads', express.static(path.join(process.cwd(), 'uploads')));
+const uploadsPath = path.join(process.cwd(), 'uploads');
+if (!fs.existsSync(uploadsPath)) {
+  fs.mkdirSync(uploadsPath, { recursive: true });
+}
+app.use('/uploads', express.static(uploadsPath));
 
 // ─── Swagger Docs ───────────────────────────────────────────────────────────
 const swaggerSpec = swaggerJSDoc({

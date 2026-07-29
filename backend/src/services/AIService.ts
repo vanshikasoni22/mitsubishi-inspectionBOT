@@ -1,7 +1,8 @@
-import { DamageType, Severity, AIAnalysis, BoundingBox } from '../data/store';
+import { DamageType, Severity, AIAnalysis, BoundingBox, db } from '../data/store';
 import { v4 as uuidv4 } from 'uuid';
 import * as fs from 'fs';
 import * as path from 'path';
+import { GoogleGenerativeAI, SchemaType } from '@google/generative-ai';
 
 // ─── AI Service ────────────────────────────────────────────────────────────
 // This service is intentionally isolated. To replace with a real model:
@@ -273,7 +274,118 @@ export class AIService {
     partNumber: string,
     returnReason: string
   ): Promise<AIAnalysisResult> {
-    // Simulate processing time
+    const geminiKey = process.env.GEMINI_API_KEY;
+    if (geminiKey) {
+      try {
+        const genAI = new GoogleGenerativeAI(geminiKey);
+        const model = genAI.getGenerativeModel({
+          model: 'gemini-2.5-flash',
+          generationConfig: {
+            responseMimeType: 'application/json',
+            responseSchema: {
+              type: SchemaType.OBJECT,
+              properties: {
+                damageType: { 
+                  type: SchemaType.STRING, 
+                  enum: ['DENT', 'RUST', 'CORROSION', 'SCRATCH', 'LOOSE_FASTENER', 'NONE', 'CRACK', 'MISSING_COMPONENT', 'PAINT_THICKNESS_ISSUE'] 
+                },
+                confidence: { type: SchemaType.NUMBER },
+                severity: { type: SchemaType.STRING, enum: ['MINOR', 'MODERATE', 'MAJOR', 'CRITICAL'] },
+                recommendation: { type: SchemaType.STRING, enum: ['ACCEPT', 'REJECT', 'MANUAL_REVIEW', 'CONDITIONAL_ACCEPT'] },
+                repairCost: { type: SchemaType.NUMBER },
+                replacementCost: { type: SchemaType.NUMBER },
+                paintCost: { type: SchemaType.NUMBER },
+                laborCost: { type: SchemaType.NUMBER },
+                downtimeCost: { type: SchemaType.NUMBER },
+                warrantyImpact: { type: SchemaType.NUMBER },
+                suggestedCause: { type: SchemaType.STRING },
+                reasoning: { type: SchemaType.STRING },
+                oemLiability: { type: SchemaType.NUMBER },
+                customerLiability: { type: SchemaType.NUMBER },
+                transportLiability: { type: SchemaType.NUMBER },
+                riskScore: { type: SchemaType.STRING, enum: ['LOW', 'MEDIUM', 'HIGH'] },
+                talkingPoints: { type: SchemaType.ARRAY, items: { type: SchemaType.STRING } },
+                negotiationSummary: { type: SchemaType.STRING },
+                suggestedNegotiationAmount: { type: SchemaType.NUMBER },
+                boundingBoxes: {
+                  type: SchemaType.ARRAY,
+                  items: {
+                    type: SchemaType.OBJECT,
+                    properties: {
+                      x: { type: SchemaType.NUMBER, description: 'Left boundary percentage (0-100)' },
+                      y: { type: SchemaType.NUMBER, description: 'Top boundary percentage (0-100)' },
+                      width: { type: SchemaType.NUMBER, description: 'Width percentage (0-100)' },
+                      height: { type: SchemaType.NUMBER, description: 'Height percentage (0-100)' },
+                      label: { type: SchemaType.STRING },
+                      confidence: { type: SchemaType.NUMBER }
+                    },
+                    required: ['x', 'y', 'width', 'height', 'label', 'confidence']
+                  }
+                }
+              },
+              required: [
+                'damageType', 'confidence', 'severity', 'recommendation',
+                'repairCost', 'replacementCost', 'paintCost', 'laborCost',
+                'downtimeCost', 'warrantyImpact', 'suggestedCause', 'reasoning',
+                'oemLiability', 'customerLiability', 'transportLiability', 'riskScore',
+                'talkingPoints', 'negotiationSummary', 'suggestedNegotiationAmount',
+                'boundingBoxes'
+              ]
+            } as any
+          }
+        });
+
+        const imageParts: any[] = [];
+        for (const imgUrl of imageUrls) {
+          const relativePath = imgUrl.startsWith('/') ? imgUrl.substring(1) : imgUrl;
+          const filePath = path.join(process.cwd(), relativePath);
+          if (fs.existsSync(filePath)) {
+            const buffer = fs.readFileSync(filePath);
+            const ext = path.extname(filePath).toLowerCase();
+            let mimeType = 'image/jpeg';
+            if (ext === '.png') mimeType = 'image/png';
+            else if (ext === '.webp') mimeType = 'image/webp';
+            else if (ext === '.heic') mimeType = 'image/heic';
+
+            imageParts.push({
+              inlineData: {
+                data: buffer.toString('base64'),
+                mimeType
+              }
+            });
+          }
+        }
+
+        if (imageParts.length > 0) {
+          console.log(`[Gemini Flash] Analyzing ${imageParts.length} image(s) for part ${partNumber} with reason: "${returnReason}"`);
+          const prompt = `You are an automated automotive parts inspection AI bot for Mitsubishi.
+Analyze the uploaded image(s) representing a returned part (Part Number: ${partNumber}) where the inspector stated return reason: "${returnReason}".
+Locate any physical damage or defect. Detect damageType from: 'DENT', 'RUST', 'CORROSION', 'SCRATCH', 'LOOSE_FASTENER', 'NONE', 'CRACK', 'MISSING_COMPONENT', 'PAINT_THICKNESS_ISSUE'.
+If there is damage, calculate estimated repairCost, replacementCost, paintCost, laborCost, downtimeCost, and warrantyImpact in USD.
+Calculate the liability split between OEM, Customer, and Transport (percentages summing to 100).
+Define riskScore ('LOW', 'MEDIUM', 'HIGH').
+Return suggestedTalkingPoints for supplier negotiation (array of strings) and a negotiationSummary (string) along with a suggestedNegotiationAmount (number).
+Provide visual bounding boxes for each defect. The coordinates (x, y, width, height) should be normalized percentage integers (from 0 to 100).
+Return a structured JSON response matching the required schema.`;
+
+          const result = await model.generateContent([prompt, ...imageParts]);
+          const responseText = result.response.text();
+          console.log(`[Gemini Flash] Response received.`);
+          const parsed = JSON.parse(responseText);
+
+          return {
+            ...parsed,
+            limitations: `Analysis based on ${imageUrls.length} image(s). Internal structural damage may not be visible. Physical mechanical testing recommended for MAJOR/CRITICAL findings.`,
+            nextAction: this.getNextAction(parsed.recommendation, parsed.damageType),
+            summaryText: `Part ${partNumber} analyzed via Gemini 1.5 Flash. ${parsed.damageType !== 'NONE' ? `${parsed.damageType.replace(/_/g, ' ')} detected with ${parsed.confidence}% confidence.` : 'No defects detected.'} Severity: ${parsed.severity}. AI Recommendation: ${parsed.recommendation.replace(/_/g, ' ')}.`,
+          };
+        }
+      } catch (error) {
+        console.error('[Gemini Flash] Failed to analyze, falling back to mock:', error);
+      }
+    }
+
+    // Fallback: Simulate processing time
     await new Promise(resolve => setTimeout(resolve, 600 + Math.random() * 1900));
 
     let detectedDescription = '';
@@ -412,6 +524,50 @@ export class AIService {
    * AI Chat: Answer inspector questions
    */
   async chat(question: string, inspectionId?: string): Promise<string> {
+    const geminiKey = process.env.GEMINI_API_KEY;
+    if (geminiKey) {
+      try {
+        let inspectionContext = '';
+        if (inspectionId) {
+          const inspection = db.findInspectionById(inspectionId);
+          if (inspection) {
+            inspectionContext = `\nContext of current inspection:
+- Part Number: ${inspection.partNumber}
+- Return Reason: ${inspection.returnReason}
+- Status: ${inspection.status}
+- AI Analysis: ${inspection.aiAnalysis ? JSON.stringify({
+              damageType: inspection.aiAnalysis.damageType,
+              severity: inspection.aiAnalysis.severity,
+              recommendation: inspection.aiAnalysis.recommendation,
+              repairCost: inspection.aiAnalysis.repairCost,
+              suggestedCause: inspection.aiAnalysis.suggestedCause,
+              reasoning: inspection.aiAnalysis.reasoning,
+              liabilities: {
+                oem: inspection.aiAnalysis.oemLiability,
+                customer: inspection.aiAnalysis.customerLiability,
+                transport: inspection.aiAnalysis.transportLiability
+              }
+            }) : 'Not analyzed yet'}`;
+          }
+        }
+
+        const genAI = new GoogleGenerativeAI(geminiKey);
+        const model = genAI.getGenerativeModel({ model: 'gemini-2.5-flash' });
+        const prompt = `You are AutoInspect AI Assistant for Mitsubishi Quality Assurance & Automotive Parts Inspection.
+${inspectionContext}
+
+User Question: "${question}"
+
+Provide a concise, expert, and professional answer for the automotive quality inspector based on the inspection context (if provided) and automotive OEM standards.`;
+
+        console.log(`[Gemini Flash Chat] Answering question: "${question}"`);
+        const result = await model.generateContent(prompt);
+        return result.response.text();
+      } catch (error) {
+        console.error('[Gemini Flash Chat] Error generating response, falling back to mock:', error);
+      }
+    }
+
     await new Promise(resolve => setTimeout(resolve, 400 + Math.random() * 600));
     const q = question.toLowerCase();
     if (q.includes('why') && q.includes('reject')) {

@@ -1,6 +1,7 @@
 import { Router, Request, Response } from 'express';
 import multer from 'multer';
 import path from 'path';
+import fs from 'fs';
 import { v4 as uuidv4 } from 'uuid';
 import { db, Inspection, ChecklistItem } from '../data/store';
 import { authenticate, requireRole } from '../middleware/auth';
@@ -10,7 +11,13 @@ const router = Router();
 
 // Multer setup
 const storage = multer.diskStorage({
-  destination: (_, __, cb) => cb(null, path.join(process.cwd(), 'uploads')),
+  destination: (_, __, cb) => {
+    const dir = path.join(process.cwd(), 'uploads');
+    if (!fs.existsSync(dir)) {
+      fs.mkdirSync(dir, { recursive: true });
+    }
+    cb(null, dir);
+  },
   filename: (_, file, cb) => {
     const ext = path.extname(file.originalname);
     cb(null, `${uuidv4()}${ext}`);
