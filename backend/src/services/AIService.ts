@@ -240,15 +240,13 @@ function detectDamageTypeFromCaption(caption: string): DamageType | null {
   return null;
 }
 
-// Fallback weighted random for unknown image types
+// Fallback weighted random for unknown image types (Default to REJECT / MAJOR damage for safety)
 const FALLBACK_PROFILES: Array<{ type: DamageType; weight: number }> = [
-  { type: 'SCRATCH', weight: 15 }, { type: 'DENT', weight: 12 },
-  { type: 'RUST', weight: 10 }, { type: 'NONE', weight: 12 },
-  { type: 'TRANSPORTATION_DAMAGE', weight: 10 }, { type: 'PAINT_PEEL', weight: 8 },
-  { type: 'IMPACT_MARK', weight: 8 }, { type: 'OIL_LEAKAGE', weight: 7 },
-  { type: 'SURFACE_CRACK', weight: 5 }, { type: 'CORROSION', weight: 7 },
-  { type: 'WARPING', weight: 4 }, { type: 'LOOSE_FASTENER', weight: 6 },
-  { type: 'MISSING_COMPONENT', weight: 5 }, { type: 'PAINT_THICKNESS_ISSUE', weight: 6 },
+  { type: 'DENT', weight: 40 },
+  { type: 'SURFACE_CRACK', weight: 25 },
+  { type: 'RUST', weight: 20 },
+  { type: 'IMPACT_MARK', weight: 10 },
+  { type: 'SCRATCH', weight: 5 },
 ];
 
 function weightedFallback(): DamageType {
@@ -258,16 +256,69 @@ function weightedFallback(): DamageType {
     rand -= p.weight;
     if (rand <= 0) return p.type;
   }
-  return 'SCRATCH';
+  return 'DENT';
 }
-
-
 
 export class AIService {
   /**
+   * Helper to resolve local, remote HTTP/HTTPS, or base64 image data for Gemini Vision.
+   */
+  private async resolveImagePart(imgUrl: string): Promise<any | null> {
+    try {
+      if (!imgUrl) return null;
+
+      // Base64 Data URI
+      if (imgUrl.startsWith('data:image/')) {
+        const parts = imgUrl.split(';base64,');
+        const mimeType = parts[0].replace('data:', '');
+        const data = parts[1];
+        return { inlineData: { data, mimeType } };
+      }
+
+      // Remote HTTP/HTTPS URL
+      if (imgUrl.startsWith('http://') || imgUrl.startsWith('https://')) {
+        console.log(`[AIService] Fetching remote image URL for Gemini Vision: ${imgUrl}`);
+        const response = await fetch(imgUrl);
+        if (response.ok) {
+          const arrayBuffer = await response.arrayBuffer();
+          const buffer = Buffer.from(arrayBuffer);
+          const contentType = response.headers.get('content-type') || 'image/jpeg';
+          return { inlineData: { data: buffer.toString('base64'), mimeType: contentType } };
+        } else {
+          console.warn(`[AIService] Could not fetch remote image status ${response.status}: ${imgUrl}`);
+        }
+      }
+
+      // Local file paths
+      const relativePath = imgUrl.startsWith('/') ? imgUrl.substring(1) : imgUrl;
+      const candidatePaths = [
+        path.join(process.cwd(), relativePath),
+        path.join(process.cwd(), 'uploads', path.basename(imgUrl)),
+        path.join(process.cwd(), 'public', relativePath),
+        path.join('/tmp', relativePath),
+        path.join('/tmp/uploads', path.basename(imgUrl)),
+        imgUrl,
+      ];
+
+      for (const filePath of candidatePaths) {
+        if (fs.existsSync(filePath) && fs.statSync(filePath).isFile()) {
+          const buffer = fs.readFileSync(filePath);
+          const ext = path.extname(filePath).toLowerCase();
+          let mimeType = 'image/jpeg';
+          if (ext === '.png') mimeType = 'image/png';
+          else if (ext === '.webp') mimeType = 'image/webp';
+          else if (ext === '.heic') mimeType = 'image/heic';
+          return { inlineData: { data: buffer.toString('base64'), mimeType } };
+        }
+      }
+    } catch (err) {
+      console.error('[AIService] Failed to resolve image part:', imgUrl, err);
+    }
+    return null;
+  }
+
+  /**
    * Analyze inspection images and return AI findings.
-   * SWAP THIS METHOD with a real model call (YOLO, TensorFlow, etc.)
-   * without changing any frontend code.
    */
   async analyzeImages(
     imageUrls: string[],
@@ -287,7 +338,7 @@ export class AIService {
               properties: {
                 damageType: { 
                   type: SchemaType.STRING, 
-                  enum: ['DENT', 'RUST', 'CORROSION', 'SCRATCH', 'LOOSE_FASTENER', 'NONE', 'CRACK', 'MISSING_COMPONENT', 'PAINT_THICKNESS_ISSUE'] 
+                  enum: ['DENT', 'RUST', 'CORROSION', 'SCRATCH', 'LOOSE_FASTENER', 'NONE', 'CRACK', 'SURFACE_CRACK', 'MISSING_COMPONENT', 'PAINT_THICKNESS_ISSUE'] 
                 },
                 confidence: { type: SchemaType.NUMBER },
                 severity: { type: SchemaType.STRING, enum: ['MINOR', 'MODERATE', 'MAJOR', 'CRITICAL'] },
@@ -337,47 +388,49 @@ export class AIService {
 
         const imageParts: any[] = [];
         for (const imgUrl of imageUrls) {
-          const relativePath = imgUrl.startsWith('/') ? imgUrl.substring(1) : imgUrl;
-          const filePath = path.join(process.cwd(), relativePath);
-          if (fs.existsSync(filePath)) {
-            const buffer = fs.readFileSync(filePath);
-            const ext = path.extname(filePath).toLowerCase();
-            let mimeType = 'image/jpeg';
-            if (ext === '.png') mimeType = 'image/png';
-            else if (ext === '.webp') mimeType = 'image/webp';
-            else if (ext === '.heic') mimeType = 'image/heic';
-
-            imageParts.push({
-              inlineData: {
-                data: buffer.toString('base64'),
-                mimeType
-              }
-            });
+          const partData = await this.resolveImagePart(imgUrl);
+          if (partData) {
+            imageParts.push(partData);
           }
         }
 
         if (imageParts.length > 0) {
           console.log(`[Gemini Flash] Analyzing ${imageParts.length} image(s) for part ${partNumber} with reason: "${returnReason}"`);
-          const prompt = `You are an automated automotive parts inspection AI bot for Mitsubishi.
-Analyze the uploaded image(s) representing a returned part (Part Number: ${partNumber}) where the inspector stated return reason: "${returnReason}".
-Locate any physical damage or defect. Detect damageType from: 'DENT', 'RUST', 'CORROSION', 'SCRATCH', 'LOOSE_FASTENER', 'NONE', 'CRACK', 'MISSING_COMPONENT', 'PAINT_THICKNESS_ISSUE'.
-If there is damage, calculate estimated repairCost, replacementCost, paintCost, laborCost, downtimeCost, and warrantyImpact in USD.
-Calculate the liability split between OEM, Customer, and Transport (percentages summing to 100).
-Define riskScore ('LOW', 'MEDIUM', 'HIGH').
-Return suggestedTalkingPoints for supplier negotiation (array of strings) and a negotiationSummary (string) along with a suggestedNegotiationAmount (number).
-Provide visual bounding boxes for each defect. The coordinates (x, y, width, height) should be normalized percentage integers (from 0 to 100).
-Return a structured JSON response matching the required schema.`;
+          const prompt = `You are an expert automotive quality control & defect assessment AI bot for Mitsubishi Electric / Mitsubishi Motors.
+Examine the attached image(s) for returned automotive part (Part Number: ${partNumber}) where reported return note is: "${returnReason}".
+
+STRICT DAMAGE CLASSIFICATION RULES:
+1. Examine the photo(s) with extreme precision.
+2. IF YOU SEE ANY BODY COLLISION DAMAGE, CRUSHED METAL, BENT STRUCTURAL PANELS, BROKEN HOUSINGS, IMPACT DEFORMATION, ACCIDENT CRASH DAMAGE, DEEP DENTS, OR CRACKED PARTS:
+   - Set damageType = 'DENT' or 'SURFACE_CRACK'
+   - Set severity = 'CRITICAL' or 'MAJOR'
+   - Set recommendation = 'REJECT'
+   - Set riskScore = 'HIGH'
+   - Set confidence = 95 to 100
+   - Calculate realistic repairCost ($1500-$4000), replacementCost ($3500-$9000), downtimeCost ($2000+), warrantyImpact ($4000+)
+   - Set liability split: oemLiability (15-25%), customerLiability (20-40%), transportLiability (50-75%)
+3. IF YOU SEE RUST, ACTIVE CORROSION, PAINT DELAMINATION, FLUID LEAKS, OR MISSING COMPONENTS:
+   - Set recommendation = 'REJECT' or 'MANUAL_REVIEW'
+   - Set severity = 'MAJOR' or 'MODERATE'
+   - Set riskScore = 'HIGH' or 'MEDIUM'
+4. DO NOT SET RECOMMENDATION TO 'ACCEPT' UNLESS THE PART IS 100% PRISTINE, COMPLETELY UNDAMAGED, OR HAS ONLY NEGLIGIBLE HAIRLINE COSMETIC ABRASION.
+5. Provide visual bounding boxes [x, y, width, height] (0-100 normalized percentages) accurately outlining each defect zone in the photo.
+6. Provide specific supplier negotiation talking points and a summary.`;
 
           const result = await model.generateContent([prompt, ...imageParts]);
           const responseText = result.response.text();
           console.log(`[Gemini Flash] Response received.`);
           const parsed = JSON.parse(responseText);
 
+          if (parsed.damageType === 'CRACK') {
+            parsed.damageType = 'SURFACE_CRACK';
+          }
+
           return {
             ...parsed,
             limitations: `Analysis based on ${imageUrls.length} image(s). Internal structural damage may not be visible. Physical mechanical testing recommended for MAJOR/CRITICAL findings.`,
             nextAction: this.getNextAction(parsed.recommendation, parsed.damageType),
-            summaryText: `Part ${partNumber} analyzed via Gemini 1.5 Flash. ${parsed.damageType !== 'NONE' ? `${parsed.damageType.replace(/_/g, ' ')} detected with ${parsed.confidence}% confidence.` : 'No defects detected.'} Severity: ${parsed.severity}. AI Recommendation: ${parsed.recommendation.replace(/_/g, ' ')}.`,
+            summaryText: `Part ${partNumber} analyzed via Gemini 2.5 Flash. ${parsed.damageType !== 'NONE' ? `${parsed.damageType.replace(/_/g, ' ')} detected with ${parsed.confidence}% confidence.` : 'No defects detected.'} Severity: ${parsed.severity}. AI Recommendation: ${parsed.recommendation.replace(/_/g, ' ')}.`,
           };
         }
       } catch (error: any) {
