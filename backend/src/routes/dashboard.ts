@@ -134,8 +134,9 @@ router.get('/analytics', authenticate, (_req: Request, res: Response) => {
   const avgConfidence = withAI.length > 0
     ? Math.round(withAI.reduce((sum, i) => sum + (i.aiAnalysis!.confidence), 0) / withAI.length)
     : 0;
-  const avgRepairCost = withAI.length > 0
-    ? Math.round(withAI.reduce((sum, i) => sum + (i.aiAnalysis!.repairCost), 0) / withAI.length)
+  const acceptedCount = inspections.filter(i => i.status === 'ACCEPTED').length;
+  const acceptRate = inspections.length > 0
+    ? Math.round((acceptedCount / inspections.length) * 100)
     : 0;
 
   return res.json({
@@ -144,7 +145,7 @@ router.get('/analytics', authenticate, (_req: Request, res: Response) => {
     supplierStats,
     oemStats,
     monthly,
-    kpis: { avgConfidence, avgRepairCost, totalInspections: inspections.length },
+    kpis: { avgConfidence, acceptRate, totalInspections: inspections.length },
     ...db.getChartData(),
   });
 });
