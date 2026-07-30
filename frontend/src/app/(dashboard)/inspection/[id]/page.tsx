@@ -366,7 +366,7 @@ export default function InspectionDetailPage() {
                   <div style={{ marginBottom: 20 }}>
                     <div style={{ fontSize: 12, color: 'var(--text-muted)', marginBottom: 12, textTransform: 'uppercase', letterSpacing: '0.05em' }}>Liability Distribution</div>
                     {[
-                      { label: 'OEM Liability', pct: ai.oemLiability, color: '#0066CC' },
+                      { label: 'Manufacturer Liability', pct: ai.oemLiability, color: '#0066CC' },
                       { label: 'Customer Liability', pct: ai.customerLiability, color: '#FFB300' },
                       { label: 'Transport Liability', pct: ai.transportLiability, color: '#00D4FF' },
                     ].map((l, i) => (
@@ -539,7 +539,7 @@ export default function InspectionDetailPage() {
 
             {/* Quick questions */}
             <div style={{ padding: '0 12px 8px', display: 'flex', gap: 6, overflowX: 'auto' }}>
-              {['Why rejected?', 'What caused this?', 'What to tell OEM?', 'Severity level?'].map(q => (
+              {['Why rejected?', 'What caused this?', 'What to present in negotiation?', 'Severity level?'].map(q => (
                 <button key={q} onClick={() => { setChatInput(q); }}
                   style={{ flexShrink: 0, fontSize: 11, padding: '4px 10px', borderRadius: 12, background: 'rgba(0,102,204,0.15)', border: '1px solid rgba(0,102,204,0.25)', color: 'var(--primary-light)', cursor: 'pointer', fontWeight: 600 }}>
                   {q}

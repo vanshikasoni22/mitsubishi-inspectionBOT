@@ -9,7 +9,7 @@ import {
 const features = [
   { icon: Brain, title: 'AI Damage Detection', desc: 'Multi-defect detection with bounding boxes and confidence scoring powered by computer vision.', color: '#0066CC' },
   { icon: FileText, title: 'Inspection Reports', desc: 'Professional PDF reports with digital signatures, QR codes, and audit trails.', color: '#00D4FF' },
-  { icon: Zap, title: 'OEM Negotiation', desc: 'AI-powered negotiation assistant with liability attribution and talking points.', color: '#00E676' },
+  { icon: Zap, title: 'Smart Negotiation', desc: 'AI-powered negotiation assistant with liability attribution and talking points.', color: '#00E676' },
   { icon: BarChart3, title: 'Smart Analytics', desc: 'Real-time dashboards with supplier comparison, damage trends, and KPI tracking.', color: '#FFB300' },
   { icon: Shield, title: 'Role-Based Access', desc: 'Granular permissions for Admins, Supervisors, and Inspectors with audit logging.', color: '#BB86FC' },
   { icon: Activity, title: 'Risk Scoring', desc: 'Risk prediction and impact analysis based on defect severity.', color: '#FF4B6B' },
@@ -26,7 +26,7 @@ const stats = [
   { value: '98.7%', label: 'AI Accuracy' },
   { value: '14min', label: 'Avg Inspection Time' },
   { value: '99.9%', label: 'System Uptime' },
-  { value: '50+', label: 'OEM Partners' },
+  { value: '100%', label: 'Traceability' },
 ];
 
 export default function LandingPage() {
@@ -115,8 +115,8 @@ export default function LandingPage() {
             transition={{ delay: 0.4 }}
             style={{ fontSize: 18, color: 'var(--text-secondary)', lineHeight: 1.7, maxWidth: 640, margin: '0 auto 40px' }}
           >
-            Reduce return disputes by 85%. AI-powered defect detection, OEM negotiation assistance,
-            and real-time analytics for Fortune 500 automotive manufacturers.
+            Reduce return disputes by 85%. AI-powered defect detection, smart negotiation assistance,
+            and real-time analytics for enterprise quality control teams.
           </motion.p>
 
           <motion.div

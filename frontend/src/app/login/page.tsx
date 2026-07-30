@@ -81,7 +81,7 @@ export default function LoginPage() {
           {[
             { icon: '🧠', text: 'AI defect detection with 98.7% accuracy' },
             { icon: '📋', text: 'Professional PDF reports with QR codes' },
-            { icon: '💬', text: 'OEM negotiation assistant & talking points' },
+            { icon: '💬', text: 'Smart negotiation assistant & talking points' },
             { icon: '📊', text: 'Real-time analytics and supplier comparison' },
           ].map((f, i) => (
             <motion.div key={i} initial={{ opacity: 0, x: -20 }} animate={{ opacity: 1, x: 0 }} transition={{ delay: 0.3 + i * 0.1 }}

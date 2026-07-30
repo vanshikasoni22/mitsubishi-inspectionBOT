@@ -145,7 +145,7 @@ export default function AdminPanelPage() {
         <div className="tabs" style={{ marginBottom: 24, width: 'fit-content' }}>
           {[
             { id: 'users', label: 'User Management', icon: Users },
-            { id: 'oems', label: 'OEM Partners', icon: Building },
+            { id: 'oems', label: 'Client Partners', icon: Building },
             { id: 'suppliers', label: 'Suppliers', icon: Truck },
             { id: 'approvals', label: 'Inspection Approvals', icon: Shield },
             { id: 'logs', label: 'Audit Logs', icon: Activity },
@@ -220,10 +220,10 @@ export default function AdminPanelPage() {
           {/* OEM PARTNERS */}
           {activeTab === 'oems' && (
             <div>
-              <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 20 }}>
-                <h3 style={{ fontSize: 16, fontWeight: 700 }}>OEM Partners</h3>
+              <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: 16 }}>
+                <h3 style={{ fontSize: 16, fontWeight: 700 }}>Client Partners</h3>
                 <button onClick={() => setOemFormOpen(true)} className="btn-primary" style={{ padding: '8px 16px', fontSize: 13 }}>
-                  <PlusCircle size={14} /> Add OEM
+                  <PlusCircle size={14} /> Add Client Partner
                 </button>
               </div>
 
@@ -557,10 +557,10 @@ export default function AdminPanelPage() {
         {oemFormOpen && (
           <div style={{ position: 'fixed', inset: 0, background: 'rgba(0,0,0,0.6)', display: 'flex', alignItems: 'center', justifyContent: 'center', zIndex: 1000 }}>
             <div className="glass-card" style={{ width: 400, padding: 24, position: 'relative' }}>
-              <h3 style={{ fontSize: 16, fontWeight: 700, marginBottom: 16 }}>Create OEM Partner</h3>
-              <div style={{ display: 'flex', flexDirection: 'column', gap: 12 }}>
+              <h3 style={{ fontSize: 16, fontWeight: 700, marginBottom: 16 }}>Create Client Partner</h3>
+              <div style={{ display: 'flex', flexDirection: 'column', gap: 14 }}>
                 <div>
-                  <label className="label">OEM Name</label>
+                  <label className="label">Client Name</label>
                   <input className="input" type="text" value={oemForm.name} onChange={e => setOemForm({ ...oemForm, name: e.target.value })} />
                 </div>
                 <div>
