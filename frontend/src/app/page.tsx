@@ -41,18 +41,14 @@ export default function LandingPage() {
         borderBottom: '1px solid #E5E7EB',
       }}>
         <div style={{ display: 'flex', alignItems: 'center', gap: 12 }}>
-          <div style={{
-            width: 36, height: 36, borderRadius: 10, flexShrink: 0,
-            background: 'linear-gradient(135deg, #E60012 0%, #FF3344 100%)',
-            display: 'flex', alignItems: 'center', justifyContent: 'center',
-            fontSize: '14px', fontWeight: 900, color: 'white', letterSpacing: '-0.03em',
-            boxShadow: '0 4px 12px rgba(230,0,18,0.4)',
-          }}>
-            AT
-          </div>
+          <img
+            src="/assets/mitsubishi-logo.png"
+            alt="Mitsubishi Electric Logo"
+            style={{ width: 36, height: 36, objectFit: 'contain', flexShrink: 0 }}
+          />
           <div>
-            <div style={{ fontSize: 15, fontWeight: 800, color: 'var(--text-primary)', letterSpacing: '0.04em', textTransform: 'uppercase', lineHeight: 1.1 }}>ABHIWAN</div>
-            <div style={{ fontSize: 9, color: 'var(--accent)', fontWeight: 600, letterSpacing: '0.04em', textTransform: 'uppercase' }}>TECHNOLOGY</div>
+            <div style={{ fontSize: 15, fontWeight: 800, color: 'var(--text-primary)', letterSpacing: '0.04em', textTransform: 'uppercase', lineHeight: 1.1 }}>MITSUBISHI</div>
+            <div style={{ fontSize: 9, color: 'var(--accent)', fontWeight: 600, letterSpacing: '0.04em', textTransform: 'uppercase' }}>ELECTRIC</div>
           </div>
         </div>
         <div style={{ display: 'flex', alignItems: 'center', gap: 16 }}>
@@ -149,7 +145,7 @@ export default function LandingPage() {
               <div style={{ width: 10, height: 10, borderRadius: '50%', background: '#FFB300' }} />
               <div style={{ width: 10, height: 10, borderRadius: '50%', background: '#00E676' }} />
               <div style={{ flex: 1, textAlign: 'center', fontSize: 11, color: 'var(--text-muted)', letterSpacing: '0.05em' }}>
-                Abhiwan Technology — AI Inspection Dashboard
+                Mitsubishi Electric — AI Inspection Dashboard
               </div>
             </div>
             {/* Mock dashboard content */}
@@ -275,7 +271,7 @@ export default function LandingPage() {
         <div style={{ maxWidth: 1000, margin: '0 auto' }}>
           <motion.div initial={{ opacity: 0, y: 20 }} whileInView={{ opacity: 1, y: 0 }} viewport={{ once: true }} style={{ textAlign: 'center', marginBottom: 60 }}>
             <h2 style={{ fontSize: 40, fontWeight: 800, letterSpacing: '-0.02em', marginBottom: 16 }}>
-              How the <span className="gradient-text">Abhiwan Technology</span> AI System works
+              How the <span className="gradient-text">Mitsubishi Electric</span> AI System works
             </h2>
           </motion.div>
           <div style={{ display: 'grid', gridTemplateColumns: 'repeat(4, 1fr)', gap: 24, position: 'relative' }}>
@@ -321,7 +317,7 @@ export default function LandingPage() {
             Ready to transform your<br /><span className="gradient-text">inspection process?</span>
           </h2>
           <p style={{ color: 'var(--text-secondary)', fontSize: 16, marginBottom: 36 }}>
-            Trusted by leading quality control teams worldwide. Built to Abhiwan Technology's precision engineering standards.
+            Trusted by leading quality control teams worldwide. Built to Mitsubishi Electric's precision engineering standards.
           </p>
           <div style={{ display: 'flex', gap: 16, justifyContent: 'center' }}>
             <Link href="/register" className="btn-primary" style={{ fontSize: 16, padding: '14px 28px' }}>
@@ -344,16 +340,11 @@ export default function LandingPage() {
       {/* Footer */}
       <footer style={{ padding: '32px 48px', borderTop: '1px solid var(--glass-border)', display: 'flex', justifyContent: 'space-between', alignItems: 'center', flexWrap: 'wrap', gap: 16 }}>
         <div style={{ display: 'flex', alignItems: 'center', gap: 10 }}>
-          <div style={{
-            width: 28, height: 28, borderRadius: 8, flexShrink: 0,
-            background: 'linear-gradient(135deg, #E60012 0%, #FF3344 100%)',
-            display: 'flex', alignItems: 'center', justifyContent: 'center',
-            fontSize: '11px', fontWeight: 900, color: 'white',
-          }}>AT</div>
-          <span style={{ fontWeight: 700, fontSize: 13, textTransform: 'uppercase', letterSpacing: '0.04em' }}>Abhiwan Technology</span>
+          <img src="/assets/mitsubishi-logo.png" alt="Mitsubishi Electric Logo" style={{ width: 28, height: 28, objectFit: 'contain' }} />
+          <span style={{ fontWeight: 700, fontSize: 13, textTransform: 'uppercase', letterSpacing: '0.04em' }}>Mitsubishi Electric</span>
         </div>
         <p style={{ color: 'var(--text-muted)', fontSize: 12 }}>
-          © 2024 Abhiwan Technology. AI Inspection System.
+          © 2024 Mitsubishi Electric. AI Inspection System.
         </p>
         <div style={{ display: 'flex', gap: 20 }}>
           {['Privacy', 'Terms', 'API Docs', 'Support'].map(l => (

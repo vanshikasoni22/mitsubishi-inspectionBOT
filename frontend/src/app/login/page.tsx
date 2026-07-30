@@ -62,10 +62,8 @@ export default function LoginPage() {
 
         <div style={{ position: 'relative', zIndex: 1 }}>
           <Link href="/" style={{ display: 'flex', alignItems: 'center', gap: 12, textDecoration: 'none', marginBottom: 60 }}>
-            <div style={{ width: 40, height: 40, borderRadius: 12, background: 'linear-gradient(135deg, #E60012, #FF3344)', display: 'flex', alignItems: 'center', justifyContent: 'center', boxShadow: '0 4px 20px rgba(230,0,18,0.5)', fontSize: '16px', fontWeight: 900, color: 'white' }}>
-              AT
-            </div>
-            <span style={{ fontSize: 18, fontWeight: 800, color: 'white' }}>Abhiwan Technology</span>
+            <img src="/assets/mitsubishi-logo.png" alt="Mitsubishi Electric Logo" style={{ width: 40, height: 40, objectFit: 'contain' }} />
+            <span style={{ fontSize: 18, fontWeight: 800, color: 'white' }}>Mitsubishi Electric</span>
           </Link>
 
           <motion.div initial={{ opacity: 0, y: 30 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.2 }}>
@@ -124,7 +122,7 @@ export default function LoginPage() {
           style={{ width: '100%', maxWidth: 400 }}
         >
           <h1 style={{ fontSize: 28, fontWeight: 800, letterSpacing: '-0.02em', marginBottom: 8 }}>Welcome back</h1>
-          <p style={{ color: 'var(--text-secondary)', fontSize: 14, marginBottom: 36 }}>Sign in to your Abhiwan Technology account</p>
+          <p style={{ color: 'var(--text-secondary)', fontSize: 14, marginBottom: 36 }}>Sign in to your Mitsubishi Electric account</p>
 
           <form onSubmit={handleLogin}>
             <div style={{ marginBottom: 20 }}>

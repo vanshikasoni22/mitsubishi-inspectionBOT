@@ -38,21 +38,17 @@ export default function Sidebar() {
       {/* Logo */}
       <div style={{ padding: '24px 20px 16px', borderBottom: '1px solid var(--glass-border)' }}>
         <Link href="/dashboard" style={{ textDecoration: 'none', display: 'flex', alignItems: 'center', gap: '12px' }}>
-          <div style={{
-            width: 34, height: 34, borderRadius: 10, flexShrink: 0,
-            background: 'linear-gradient(135deg, #E60012 0%, #FF3344 100%)',
-            display: 'flex', alignItems: 'center', justifyContent: 'center',
-            fontSize: '14px', fontWeight: 900, color: 'white', letterSpacing: '-0.03em',
-            boxShadow: '0 4px 12px rgba(230,0,18,0.4)',
-          }}>
-            AT
-          </div>
+          <img
+            src="/assets/mitsubishi-logo.png"
+            alt="Mitsubishi Electric Logo"
+            style={{ width: 34, height: 34, objectFit: 'contain', flexShrink: 0 }}
+          />
           <div>
             <div style={{ fontSize: '13px', fontWeight: 800, color: 'var(--text-primary)', letterSpacing: '0.04em', textTransform: 'uppercase' }}>
-              ABHIWAN
+              MITSUBISHI
             </div>
             <div style={{ fontSize: '9px', color: 'var(--accent)', fontWeight: 600, letterSpacing: '0.02em', textTransform: 'uppercase' }}>
-              TECHNOLOGY
+              ELECTRIC
             </div>
           </div>
         </Link>

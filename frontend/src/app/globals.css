@@ -1,10 +1,10 @@
 @import url('https://fonts.googleapis.com/css2?family=IBM+Plex+Sans:wght@300;400;500;600;700&family=JetBrains+Mono:wght@400;500;600&display=swap');
 @import "tailwindcss";
 
-/* ─── CSS Variables (Abhiwan Technology AI Inspection Theme) ──────────── */
+/* ─── CSS Variables (Mitsubishi Electric AI Inspection Theme) ──────────── */
 :root {
   /* Brand Colors */
-  --primary: #E60012;         /* Abhiwan Red */
+  --primary: #E60012;         /* Mitsubishi Red */
   --primary-light: #FF3344;
   --primary-dark: #B3000A;
   --accent: #6B7280;          /* Steel Gray */

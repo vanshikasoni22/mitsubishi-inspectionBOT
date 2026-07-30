@@ -43,18 +43,14 @@ export default function Topbar({ title, subtitle }: TopbarProps) {
     }}>
       {/* Page Title */}
       <div style={{ display: 'flex', alignItems: 'center', gap: '12px', flex: 1 }}>
-        <div style={{
-          width: 28, height: 28, borderRadius: 8, flexShrink: 0,
-          background: 'linear-gradient(135deg, #E60012 0%, #FF3344 100%)',
-          display: 'flex', alignItems: 'center', justifyContent: 'center',
-          fontSize: '11px', fontWeight: 900, color: 'white', letterSpacing: '-0.02em',
-          boxShadow: '0 2px 8px rgba(230,0,18,0.35)',
-        }}>
-          AT
-        </div>
+        <img
+          src="/assets/mitsubishi-logo.png"
+          alt="Mitsubishi Electric Logo"
+          style={{ width: 28, height: 28, objectFit: 'contain', flexShrink: 0 }}
+        />
         <div>
           <h1 style={{ fontSize: '13px', fontWeight: 800, color: 'var(--text-primary)', textTransform: 'uppercase', letterSpacing: '0.03em', lineHeight: 1.2 }}>
-            Abhiwan Technology
+            Mitsubishi Electric
           </h1>
           <p style={{ fontSize: '10px', color: 'var(--text-secondary)', fontWeight: 500 }}>
             AI Parts Inspection System

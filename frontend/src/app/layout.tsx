@@ -6,9 +6,9 @@ import { Providers } from '@/components/Providers';
 const inter = Inter({ subsets: ['latin'], variable: '--font-inter' });
 
 export const metadata: Metadata = {
-  title: 'Abhiwan Technology — AI Inspection System',
-  description: 'Abhiwan Technology AI-powered parts inspection and defect detection platform for quality control teams.',
-  keywords: ['Abhiwan Technology', 'AI inspection', 'quality assurance', 'defect detection'],
+  title: 'Mitsubishi Electric — AI Inspection System',
+  description: 'Mitsubishi Electric AI-powered parts inspection and defect detection platform for quality control teams.',
+  keywords: ['Mitsubishi Electric', 'AI inspection', 'quality assurance', 'defect detection'],
 };
 
 export default function RootLayout({ children }: { children: React.ReactNode }) {
