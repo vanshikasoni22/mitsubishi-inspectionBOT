@@ -36,19 +36,14 @@ export default function InspectionHistoryPage() {
   const [page, setPage] = useState(1);
   const [search, setSearch] = useState('');
   const [status, setStatus] = useState('');
-  const [oemId, setOemId] = useState('');
-  const [supplierId, setSupplierId] = useState('');
   const [sortBy, setSortBy] = useState('createdAt');
   const [sortOrder, setSortOrder] = useState<'asc' | 'desc'>('desc');
 
   const { data, isLoading, refetch } = useQuery({
-    queryKey: ['inspection-history', page, search, status, oemId, supplierId, sortBy, sortOrder],
-    queryFn: () => inspectionApi.getHistory({ page, limit: 12, search, status, oemId, supplierId, sortBy, sortOrder }).then(r => r.data),
+    queryKey: ['inspection-history', page, search, status, sortBy, sortOrder],
+    queryFn: () => inspectionApi.getHistory({ page, limit: 12, search, status, sortBy, sortOrder }).then(r => r.data),
     keepPreviousData: true,
   } as any);
-
-  const { data: oemsData } = useQuery({ queryKey: ['oems'], queryFn: () => adminApi.getOems().then(r => r.data.oems) });
-  const { data: suppliersData } = useQuery({ queryKey: ['suppliers'], queryFn: () => adminApi.getSuppliers().then(r => r.data.suppliers) });
 
   const items = (data as any)?.items ?? [];
   const pagination = (data as any)?.pagination ?? { page: 1, pages: 1, total: 0 };
@@ -59,9 +54,9 @@ export default function InspectionHistoryPage() {
   };
 
   const exportCSV = () => {
-    const headers = ['Batch Number', 'Part Number', 'OEM', 'Supplier', 'Vehicle', 'Status', 'Damage', 'Confidence', 'Date'];
+    const headers = ['Batch Number', 'Part Number', 'Part Name', 'Status', 'Damage', 'Confidence', 'Date'];
     const rows = items.map((i: any) => [
-      i.batchNumber, i.partNumber, i.oem?.name, i.supplier?.name, i.vehicleModel,
+      i.batchNumber, i.partNumber, i.vehicleModel ?? '—',
       i.status, i.aiAnalysis?.damageType ?? 'N/A', i.aiAnalysis?.confidence ?? 'N/A',
       format(new Date(i.createdAt), 'yyyy-MM-dd'),
     ]);
@@ -87,14 +82,6 @@ export default function InspectionHistoryPage() {
           <select className="select" style={{ flex: 1, minWidth: 140 }} value={status} onChange={e => { setStatus(e.target.value); setPage(1); }}>
             {STATUS_OPTIONS.map(s => <option key={s} value={s}>{s || 'All Statuses'}</option>)}
           </select>
-          <select className="select" style={{ flex: 1, minWidth: 140 }} value={oemId} onChange={e => { setOemId(e.target.value); setPage(1); }}>
-            <option value="">All OEMs</option>
-            {(oemsData ?? []).map((o: any) => <option key={o.id} value={o.id}>{o.name}</option>)}
-          </select>
-          <select className="select" style={{ flex: 1, minWidth: 140 }} value={supplierId} onChange={e => { setSupplierId(e.target.value); setPage(1); }}>
-            <option value="">All Suppliers</option>
-            {(suppliersData ?? []).map((s: any) => <option key={s.id} value={s.id}>{s.name}</option>)}
-          </select>
           <button onClick={() => refetch()} className="btn-ghost" title="Refresh">
             <RefreshCw size={15} />
           </button>
@@ -117,8 +104,7 @@ export default function InspectionHistoryPage() {
                     {[
                       { label: 'Batch No.', col: 'batchNumber' },
                       { label: 'Part Number', col: 'partNumber' },
-                      { label: 'OEM', col: null },
-                      { label: 'Vehicle', col: null },
+                      { label: 'Part Name', col: null },
                       { label: 'Status', col: 'status' },
                       { label: 'Damage', col: null },
                       { label: 'Confidence', col: null },
@@ -138,14 +124,13 @@ export default function InspectionHistoryPage() {
                 </thead>
                 <tbody>
                   {items.length === 0 ? (
-                    <tr><td colSpan={10} style={{ textAlign: 'center', padding: 40, color: 'var(--text-muted)' }}>No inspections found matching your filters.</td></tr>
+                    <tr><td colSpan={9} style={{ textAlign: 'center', padding: 40, color: 'var(--text-muted)' }}>No inspections found matching your filters.</td></tr>
                   ) : items.map((item: any, i: number) => (
                     <motion.tr key={item.id} initial={{ opacity: 0 }} animate={{ opacity: 1 }} transition={{ delay: i * 0.03 }}
                       style={{ cursor: 'pointer' }} onClick={() => router.push(`/inspection/${item.id}`)}>
                       <td><span className="font-mono" style={{ fontSize: 12, color: 'var(--primary-light)' }}>{item.batchNumber}</span></td>
                       <td style={{ fontWeight: 600 }}>{item.partNumber}</td>
-                      <td style={{ color: 'var(--text-secondary)', fontSize: 13 }}>{item.oem?.name ?? '—'}</td>
-                      <td style={{ color: 'var(--text-secondary)', fontSize: 13, maxWidth: 140, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>{item.vehicleModel}</td>
+                      <td style={{ color: 'var(--text-secondary)', fontSize: 13, maxWidth: 180, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>{item.vehicleModel ?? '—'}</td>
                       <td><StatusBadge status={item.status} /></td>
                       <td style={{ fontSize: 12, color: 'var(--text-secondary)' }}>
                         {item.aiAnalysis?.damageType?.replace(/_/g, ' ') ?? '—'}

@@ -296,7 +296,7 @@ export default function InspectionDetailPage() {
         {/* Meta Cards Row */}
         <div style={{ display: 'grid', gridTemplateColumns: 'repeat(4, 1fr)', gap: 14, marginBottom: 24 }}>
           {[
-            { icon: Building, label: 'OEM', value: inspection.oem?.name ?? '—', sub: inspection.oem?.country },
+            { icon: FileText, label: 'Part Name', value: inspection.vehicleModel ?? '—', sub: 'Part description' },
             { icon: User, label: 'Inspector', value: inspection.inspector?.name ?? '—', sub: inspection.inspector?.department },
             { icon: Clock, label: 'Duration', value: `${inspection.inspectionDuration ?? '—'} min`, sub: format(new Date(inspection.createdAt), 'MMM dd, yyyy HH:mm') },
             { icon: MapPin, label: 'GPS Location', value: inspection.gpsLocation ?? '—', sub: 'Tagged location' },

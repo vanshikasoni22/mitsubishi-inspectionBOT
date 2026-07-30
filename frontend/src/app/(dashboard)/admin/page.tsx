@@ -408,7 +408,7 @@ export default function AdminPanelPage() {
                         <tr>
                           <th>Batch No.</th>
                           <th>Part Number</th>
-                          <th>OEM</th>
+                          <th>Part Name</th>
                           <th>Reason</th>
                           <th>AI Confidence</th>
                           <th>Inspector</th>
@@ -424,7 +424,7 @@ export default function AdminPanelPage() {
                           }} onClick={() => setSelectedApproval(item)}>
                             <td><span className="font-mono" style={{ fontSize: 12, color: 'var(--primary-light)' }}>{item.batchNumber}</span></td>
                             <td style={{ fontWeight: 600 }}>{item.partNumber}</td>
-                            <td style={{ fontSize: 13, color: 'var(--text-secondary)' }}>{item.oem?.name}</td>
+                            <td style={{ fontSize: 13, color: 'var(--text-secondary)' }}>{item.vehicleModel ?? '—'}</td>
                             <td style={{ fontSize: 13, color: 'var(--text-secondary)' }}>{item.returnReason}</td>
                             <td>
                               <div style={{ display: 'flex', alignItems: 'center', gap: 6 }}>

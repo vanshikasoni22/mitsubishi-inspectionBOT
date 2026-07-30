@@ -117,13 +117,13 @@ export default function AnalyticsPage() {
           </motion.div>
         </div>
 
-        {/* Row 2: Monthly + Supplier + OEM */}
-        <div style={{ display: 'grid', gridTemplateColumns: '2fr 1fr 1fr', gap: 20, marginBottom: 20 }}>
+        {/* Row 2: Monthly Performance */}
+        <div style={{ marginBottom: 20 }}>
           {/* Monthly Trend */}
           <motion.div className="glass-card" initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.2 }} style={{ padding: 24 }}>
             <h3 style={{ fontSize: 15, fontWeight: 700, marginBottom: 4 }}>Monthly Performance</h3>
             <p style={{ fontSize: 12, color: 'var(--text-muted)', marginBottom: 16 }}>Last 6 months comparison</p>
-            <ResponsiveContainer width="100%" height={200}>
+            <ResponsiveContainer width="100%" height={220}>
               <BarChart data={analytics?.monthly ?? []}>
                 <CartesianGrid strokeDasharray="3 3" stroke="rgba(255,255,255,0.04)" />
                 <XAxis dataKey="month" tick={{ fill: 'var(--text-muted)', fontSize: 10 }} />
@@ -134,44 +134,6 @@ export default function AnalyticsPage() {
                 <Bar dataKey="rejected" fill="#FF4B6B" radius={[4, 4, 0, 0]} name="Rejected" />
               </BarChart>
             </ResponsiveContainer>
-          </motion.div>
-
-          {/* Supplier Table */}
-          <motion.div className="glass-card" initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.25 }} style={{ padding: 20 }}>
-            <h3 style={{ fontSize: 13, fontWeight: 700, marginBottom: 14 }}>Supplier Comparison</h3>
-            <div style={{ maxHeight: 220, overflowY: 'auto' }}>
-              {(analytics?.supplierStats ?? []).slice(0, 8).map((s: any, i: number) => (
-                <div key={i} style={{ padding: '8px 0', borderBottom: '1px solid var(--glass-border)' }}>
-                  <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: 4, fontSize: 12 }}>
-                    <span style={{ fontWeight: 600, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap', maxWidth: 120 }}>{s.name}</span>
-                    <span style={{ color: s.defectRate > 2 ? '#FF4B6B' : '#00E676', fontWeight: 700, fontSize: 11, flexShrink: 0 }}>{s.defectRate}%</span>
-                  </div>
-                  <div className="progress-bar">
-                    <div className="progress-fill" style={{ width: `${s.defectRate * 10}%`, background: s.defectRate > 2 ? '#FF4B6B' : '#00E676' }} />
-                  </div>
-                  <div style={{ fontSize: 10, color: 'var(--text-muted)', marginTop: 3 }}>{s.total} inspections · ⭐ {s.rating}</div>
-                </div>
-              ))}
-            </div>
-          </motion.div>
-
-          {/* OEM Table */}
-          <motion.div className="glass-card" initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.3 }} style={{ padding: 20 }}>
-            <h3 style={{ fontSize: 13, fontWeight: 700, marginBottom: 14 }}>OEM Comparison</h3>
-            <div style={{ maxHeight: 220, overflowY: 'auto' }}>
-              {(analytics?.oemStats ?? []).slice(0, 8).map((o: any, i: number) => (
-                <div key={i} style={{ padding: '8px 0', borderBottom: '1px solid var(--glass-border)' }}>
-                  <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: 4, fontSize: 12 }}>
-                    <span style={{ fontWeight: 600, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap', maxWidth: 110 }}>{o.name}</span>
-                    <span style={{ color: '#00E676', fontWeight: 700, fontSize: 11, flexShrink: 0 }}>{o.acceptRate}%</span>
-                  </div>
-                  <div className="progress-bar">
-                    <div className="progress-fill" style={{ width: `${o.acceptRate}%`, background: `linear-gradient(90deg, #0066CC, #00D4FF)` }} />
-                  </div>
-                  <div style={{ fontSize: 10, color: 'var(--text-muted)', marginTop: 3 }}>{o.total} parts total</div>
-                </div>
-              ))}
-            </div>
           </motion.div>
         </div>
 

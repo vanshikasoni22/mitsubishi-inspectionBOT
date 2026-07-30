@@ -176,16 +176,16 @@ class DataStore {
 
   private seedOEMs() {
     const oemData = [
-      { name: 'Bosch Automotive', country: 'Germany', contactEmail: 'parts@bosch-auto.com', partnerSince: 2018 },
-      { name: 'Continental AG', country: 'Germany', contactEmail: 'returns@continental.com', partnerSince: 2019 },
-      { name: 'Denso Corporation', country: 'Japan', contactEmail: 'inspection@denso.com', partnerSince: 2017 },
-      { name: 'Magna International', country: 'Canada', contactEmail: 'quality@magna.com', partnerSince: 2020 },
-      { name: 'ZF Friedrichshafen', country: 'Germany', contactEmail: 'returns@zf.com', partnerSince: 2018 },
-      { name: 'Aisin Group', country: 'Japan', contactEmail: 'parts@aisin.com', partnerSince: 2021 },
-      { name: 'Aptiv PLC', country: 'Ireland', contactEmail: 'qa@aptiv.com', partnerSince: 2019 },
-      { name: 'Valeo SA', country: 'France', contactEmail: 'inspection@valeo.com', partnerSince: 2020 },
-      { name: 'Delphi Technologies', country: 'UK', contactEmail: 'returns@delphi.com', partnerSince: 2016 },
-      { name: 'BorgWarner', country: 'USA', contactEmail: 'quality@borgwarner.com', partnerSince: 2022 },
+      { name: 'Client Partner Alpha', country: 'Germany', contactEmail: 'parts@client-alpha.com', partnerSince: 2018 },
+      { name: 'Client Partner Beta', country: 'Germany', contactEmail: 'returns@client-beta.com', partnerSince: 2019 },
+      { name: 'Client Partner Gamma', country: 'Japan', contactEmail: 'inspection@client-gamma.com', partnerSince: 2017 },
+      { name: 'Client Partner Delta', country: 'Canada', contactEmail: 'quality@client-delta.com', partnerSince: 2020 },
+      { name: 'Client Partner Epsilon', country: 'Germany', contactEmail: 'returns@client-epsilon.com', partnerSince: 2018 },
+      { name: 'Client Partner Zeta', country: 'Japan', contactEmail: 'parts@client-zeta.com', partnerSince: 2021 },
+      { name: 'Client Partner Eta', country: 'Ireland', contactEmail: 'qa@client-eta.com', partnerSince: 2019 },
+      { name: 'Client Partner Theta', country: 'France', contactEmail: 'inspection@client-theta.com', partnerSince: 2020 },
+      { name: 'Client Partner Iota', country: 'UK', contactEmail: 'returns@client-iota.com', partnerSince: 2016 },
+      { name: 'Client Partner Kappa', country: 'USA', contactEmail: 'quality@client-kappa.com', partnerSince: 2022 },
     ];
     this.oems = oemData.map((o, i) => ({
       id: uuidv4(),
@@ -196,16 +196,16 @@ class DataStore {
 
   private seedSuppliers() {
     const supplierData = [
-      { name: 'AutoParts Direct', country: 'USA', rating: 4.7, defectRate: 1.2 },
-      { name: 'EuroParts GmbH', country: 'Germany', rating: 4.5, defectRate: 1.8 },
-      { name: 'Asia Auto Supply', country: 'China', rating: 4.2, defectRate: 2.3 },
-      { name: 'PrecisionMotors Ltd', country: 'UK', rating: 4.8, defectRate: 0.9 },
-      { name: 'Nordic Components', country: 'Sweden', rating: 4.6, defectRate: 1.1 },
-      { name: 'Trans-Pacific Parts', country: 'Japan', rating: 4.9, defectRate: 0.7 },
-      { name: 'MexiParts S.A.', country: 'Mexico', rating: 4.1, defectRate: 2.7 },
-      { name: 'IndoAuto Components', country: 'India', rating: 3.9, defectRate: 3.1 },
-      { name: 'BrazilParts Ltda', country: 'Brazil', rating: 4.0, defectRate: 2.9 },
-      { name: 'KoreanPrecision', country: 'South Korea', rating: 4.7, defectRate: 1.0 },
+      { name: 'Supplier Group A', country: 'USA', rating: 4.7, defectRate: 1.2 },
+      { name: 'Supplier Group B', country: 'Germany', rating: 4.5, defectRate: 1.8 },
+      { name: 'Supplier Group C', country: 'China', rating: 4.2, defectRate: 2.3 },
+      { name: 'Supplier Group D', country: 'UK', rating: 4.8, defectRate: 0.9 },
+      { name: 'Supplier Group E', country: 'Sweden', rating: 4.6, defectRate: 1.1 },
+      { name: 'Supplier Group F', country: 'Japan', rating: 4.9, defectRate: 0.7 },
+      { name: 'Supplier Group G', country: 'Mexico', rating: 4.1, defectRate: 2.7 },
+      { name: 'Supplier Group H', country: 'India', rating: 3.9, defectRate: 3.1 },
+      { name: 'Supplier Group I', country: 'Brazil', rating: 4.0, defectRate: 2.9 },
+      { name: 'Supplier Group J', country: 'South Korea', rating: 4.7, defectRate: 1.0 },
     ];
     this.suppliers = supplierData.map((s, i) => ({
       id: uuidv4(),
@@ -293,10 +293,10 @@ class DataStore {
     ];
 
     const vehicleModels = [
-      'BMW 5 Series 2023', 'Mercedes C-Class 2024', 'Audi A4 2023',
-      'Toyota Camry 2024', 'Ford F-150 2023', 'Honda Accord 2024',
-      'Volkswagen Golf 2023', 'Hyundai Sonata 2024', 'Kia EV6 2023',
-      'Tesla Model 3 2024', 'Volvo XC90 2023', 'BMW iX 2024',
+      'Engine Assembly', 'Brake Rotor Unit', 'Transmission Housing',
+      'Exhaust Manifold', 'Suspension Control Arm', 'Electronic Control Unit',
+      'Fuel Injector Pack', 'Air Intake Filter', 'Cooling Radiator Module',
+      'Steering Gear Box', 'Drive Shaft Joint', 'Ignition Coil Set',
     ];
 
     const partNumbers = [
