@@ -333,7 +333,7 @@ export default function NewInspectionPage() {
                     <p style={{ fontSize: 13, color: 'var(--text-muted)' }}>{Math.round(analysisProgress)}% complete</p>
                   </div>
                   <div style={{ marginTop: 32, display: 'flex', gap: 20, justifyContent: 'center', flexWrap: 'wrap' }}>
-                    {['Pattern Recognition', 'Defect Detection', 'Severity Assessment', 'Cost Estimation'].map((s, i) => (
+                    {['Pattern Recognition', 'Defect Detection', 'Severity Assessment', 'Action Recommendation'].map((s, i) => (
                       <motion.div key={i} initial={{ opacity: 0 }} animate={{ opacity: analysisProgress > i * 25 ? 1 : 0.3 }}
                         style={{ fontSize: 12, color: 'var(--primary-light)', display: 'flex', alignItems: 'center', gap: 6 }}>
                         {analysisProgress > i * 25 + 15 ? <CheckCircle size={12} style={{ color: 'var(--success)' }} /> : <Loader2 size={12} className="animate-spin-slow" />}
@@ -454,23 +454,19 @@ export default function NewInspectionPage() {
                       </div>
                     </div>
 
-                    {/* Cost Estimator */}
+                    {/* Action Recommendations */}
                     <div className="glass-card" style={{ padding: 24 }}>
                       <h3 style={{ fontSize: 14, fontWeight: 700, marginBottom: 16, display: 'flex', alignItems: 'center', gap: 8 }}>
-                        <Zap size={16} style={{ color: 'var(--accent)' }} /> Cost Estimates
+                        <Zap size={16} style={{ color: 'var(--accent)' }} /> Recommended Actions
                       </h3>
-                      {[
-                        { label: 'Repair Cost', value: analysisResult.aiAnalysis?.repairCost, color: '#00E676' },
-                        { label: 'Replacement Cost', value: analysisResult.aiAnalysis?.replacementCost, color: '#FF4B6B' },
-                        { label: 'Labor Cost', value: analysisResult.aiAnalysis?.laborCost, color: '#FFB300' },
-                        { label: 'Downtime Impact', value: analysisResult.aiAnalysis?.downtimeCost, color: '#00D4FF' },
-                        { label: 'Warranty Impact', value: analysisResult.aiAnalysis?.warrantyImpact, color: '#BB86FC' },
-                      ].map((c, i) => (
-                        <div key={i} style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', padding: '8px 0', borderBottom: i < 4 ? '1px solid var(--glass-border)' : 'none' }}>
-                          <span style={{ fontSize: 13, color: 'var(--text-secondary)' }}>{c.label}</span>
-                          <span style={{ fontSize: 14, fontWeight: 700, color: c.color }}>${c.value?.toLocaleString()}</span>
-                        </div>
-                      ))}
+                      <div style={{ padding: '12px 16px', background: 'rgba(0,102,204,0.08)', borderRadius: 10, border: '1px solid rgba(0,102,204,0.2)', marginBottom: 14 }}>
+                        <div style={{ fontSize: 11, color: 'var(--primary-light)', fontWeight: 700, marginBottom: 4 }}>SUGGESTED NEXT ACTION</div>
+                        <p style={{ fontSize: 13, color: 'var(--text-secondary)', lineHeight: 1.6 }}>{analysisResult.aiAnalysis?.nextAction}</p>
+                      </div>
+                      <div style={{ padding: '12px 16px', background: 'rgba(255,255,255,0.03)', borderRadius: 10, border: '1px solid var(--glass-border)' }}>
+                        <div style={{ fontSize: 11, color: 'var(--text-muted)', fontWeight: 700, marginBottom: 4 }}>SUGGESTED ROOT CAUSE</div>
+                        <p style={{ fontSize: 13, color: 'var(--text-secondary)', lineHeight: 1.6 }}>{analysisResult.aiAnalysis?.suggestedCause}</p>
+                      </div>
                     </div>
                   </motion.div>
 

@@ -12,11 +12,11 @@ const features = [
   { icon: Zap, title: 'OEM Negotiation', desc: 'AI-powered negotiation assistant with liability attribution and talking points.', color: '#00E676' },
   { icon: BarChart3, title: 'Smart Analytics', desc: 'Real-time dashboards with supplier comparison, damage trends, and KPI tracking.', color: '#FFB300' },
   { icon: Shield, title: 'Role-Based Access', desc: 'Granular permissions for Admins, Supervisors, and Inspectors with audit logging.', color: '#BB86FC' },
-  { icon: Activity, title: 'Risk Scoring', desc: 'Business impact prediction with cost estimator and warranty impact analysis.', color: '#FF4B6B' },
+  { icon: Activity, title: 'Risk Scoring', desc: 'Risk prediction and impact analysis based on defect severity.', color: '#FF4B6B' },
 ];
 
 const steps = [
-  { num: '01', title: 'Select Part', desc: 'Enter part number, OEM, supplier, and return reason from the structured intake form.' },
+  { num: '01', title: 'Select Part', desc: 'Enter part number and part name in the structured intake form.' },
   { num: '02', title: 'Capture Images', desc: 'Upload multiple high-resolution photos via drag-and-drop, camera, or file picker.' },
   { num: '03', title: 'AI Analysis', desc: 'AI engine scans images, detects defects, calculates severity, and generates recommendations.' },
   { num: '04', title: 'Report & Negotiate', desc: 'Download PDF report, view negotiation talking points, and close the case.' },
@@ -25,7 +25,7 @@ const steps = [
 const stats = [
   { value: '98.7%', label: 'AI Accuracy' },
   { value: '14min', label: 'Avg Inspection Time' },
-  { value: '$2.4M', label: 'Cost Savings/Year' },
+  { value: '99.9%', label: 'System Uptime' },
   { value: '50+', label: 'OEM Partners' },
 ];
 

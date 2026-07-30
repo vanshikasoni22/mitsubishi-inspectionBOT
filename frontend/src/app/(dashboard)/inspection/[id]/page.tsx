@@ -360,12 +360,6 @@ export default function InspectionDetailPage() {
                   <div style={{ marginBottom: 20, padding: '14px 18px', background: 'rgba(0,102,204,0.08)', borderRadius: 12, border: '1px solid rgba(0,102,204,0.2)' }}>
                     <div style={{ fontSize: 12, color: 'var(--primary-light)', fontWeight: 700, marginBottom: 8 }}>NEGOTIATION SUMMARY</div>
                     <p style={{ fontSize: 14, color: 'var(--text-secondary)', lineHeight: 1.6 }}>{ai.negotiationSummary}</p>
-                    <div style={{ marginTop: 12, display: 'flex', gap: 20 }}>
-                      <div>
-                        <div style={{ fontSize: 10, color: 'var(--text-muted)', marginBottom: 2 }}>SUGGESTED AMOUNT</div>
-                        <div style={{ fontSize: 18, fontWeight: 800, color: '#00E676' }}>${ai.suggestedNegotiationAmount?.toLocaleString()}</div>
-                      </div>
-                    </div>
                   </div>
 
                   {/* Liability */}
@@ -464,33 +458,6 @@ export default function InspectionDetailPage() {
               </div>
             )}
 
-            {/* Cost Summary */}
-            {ai && (
-              <div className="glass-card" style={{ padding: 20 }}>
-                <h3 style={{ fontSize: 13, fontWeight: 700, marginBottom: 14, display: 'flex', alignItems: 'center', gap: 6 }}>
-                  <Zap size={14} style={{ color: 'var(--accent)' }} /> Cost Summary
-                </h3>
-                {[
-                  { label: 'Repair', value: ai.repairCost, color: '#00E676' },
-                  { label: 'Replacement', value: ai.replacementCost, color: '#FF4B6B' },
-                  { label: 'Labor', value: ai.laborCost, color: '#FFB300' },
-                  { label: 'Downtime', value: ai.downtimeCost, color: '#00D4FF' },
-                  { label: 'Warranty', value: ai.warrantyImpact, color: '#BB86FC' },
-                ].map((c, i) => (
-                  <div key={i} style={{ display: 'flex', justifyContent: 'space-between', padding: '7px 0', borderBottom: i < 4 ? '1px solid var(--glass-border)' : 'none', fontSize: 13 }}>
-                    <span style={{ color: 'var(--text-secondary)' }}>{c.label}</span>
-                    <span style={{ fontWeight: 700, color: c.color }}>${c.value?.toLocaleString()}</span>
-                  </div>
-                ))}
-                <div style={{ marginTop: 10, paddingTop: 10, borderTop: '1px solid var(--glass-border)', display: 'flex', justifyContent: 'space-between', fontSize: 14 }}>
-                  <span style={{ fontWeight: 700 }}>Total Impact</span>
-                  <span style={{ fontWeight: 900, color: '#FF4B6B' }}>
-                    ${((ai.repairCost ?? 0) + (ai.downtimeCost ?? 0) + (ai.warrantyImpact ?? 0)).toLocaleString()}
-                  </span>
-                </div>
-              </div>
-            )}
-
             {/* Supervisor Override */}
             {(user?.role === 'ADMIN' || user?.role === 'SUPERVISOR') && (
               <div className="glass-card" style={{ padding: 20 }}>
@@ -572,7 +539,7 @@ export default function InspectionDetailPage() {
 
             {/* Quick questions */}
             <div style={{ padding: '0 12px 8px', display: 'flex', gap: 6, overflowX: 'auto' }}>
-              {['Why rejected?', 'What caused this?', 'What to tell OEM?', 'Repair cost?'].map(q => (
+              {['Why rejected?', 'What caused this?', 'What to tell OEM?', 'Severity level?'].map(q => (
                 <button key={q} onClick={() => { setChatInput(q); }}
                   style={{ flexShrink: 0, fontSize: 11, padding: '4px 10px', borderRadius: 12, background: 'rgba(0,102,204,0.15)', border: '1px solid rgba(0,102,204,0.25)', color: 'var(--primary-light)', cursor: 'pointer', fontWeight: 600 }}>
                   {q}

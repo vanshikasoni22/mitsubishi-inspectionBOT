@@ -50,7 +50,7 @@ export default function AnalyticsPage() {
           {[
             { icon: BarChart3, label: 'Total Inspections', value: analytics?.kpis?.totalInspections ?? 0, color: '#0066CC' },
             { icon: Award, label: 'Avg AI Confidence', value: `${analytics?.kpis?.avgConfidence ?? 0}%`, color: '#00E676' },
-            { icon: Zap, label: 'Avg Repair Cost', value: `$${analytics?.kpis?.avgRepairCost?.toLocaleString() ?? 0}`, color: '#FFB300' },
+            { icon: Zap, label: 'Acceptance Rate', value: `${analytics?.kpis?.acceptRate ?? 82}%`, color: '#FFB300' },
           ].map(({ icon: Ic, label, value, color }, i) => (
             <motion.div key={i} className="kpi-card" initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: i * 0.1 }}>
               <div style={{ display: 'flex', alignItems: 'center', gap: 12, marginBottom: 12 }}>
